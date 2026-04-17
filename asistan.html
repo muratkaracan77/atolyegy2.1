@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>ASİSTAN · Atolyegy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rr-gold: #c49a6c;
+            --rr-bg: #0a0a0a;
+            --rr-cream: #f5f0e8;
+            --rr-border: rgba(196, 154, 108, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--rr-bg);
+            color: var(--rr-cream);
+            font-family: 'Cormorant Garamond', serif;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            opacity: 0.3;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--rr-border);
+            border-radius: 0px;
+            padding: 30px 25px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--rr-border);
+        }
+
+        .main-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #c49a6c 0%, #e8d5b5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 6px;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .musteri-bilgisi {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--rr-border);
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .musteri-bilgisi h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            color: var(--rr-gold);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .musteri-bilgisi p {
+            font-size: 0.9rem;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        .pdf-buttons-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .pdf-button {
+            flex: 1;
+            min-width: 45%;
+            background: transparent;
+            color: var(--rr-cream);
+            border: 1px solid var(--rr-border);
+            padding: 16px 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pdf-button.active {
+            border-color: var(--rr-gold);
+            color: var(--rr-gold);
+        }
+
+        .pdf-button.active:hover {
+            background: var(--rr-gold);
+            color: #000;
+            box-shadow: 0 0 30px rgba(196, 154, 108, 0.2);
+        }
+
+        .surec-baslik {
+            text-align: center;
+            margin: 30px 0 20px 0;
+            padding: 15px;
+            border-top: 1px solid var(--rr-border);
+            border-bottom: 1px solid var(--rr-border);
+        }
+
+        .surec-baslik h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            letter-spacing: 5px;
+            color: var(--rr-gold);
+            font-weight: 400;
+        }
+
+        .siparis-listesi {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .siparis-karti {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--rr-border);
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .siparis-karti:hover {
+            border-color: var(--rr-gold);
+            background: rgba(196, 154, 108, 0.03);
+        }
+
+        .siparis-satir {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .siparis-ust-bilgi {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .tarih {
+            font-family: 'Cinzel', monospace;
+            font-size: 0.75rem;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        .durum {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            padding: 4px 10px;
+            border: 1px solid var(--rr-border);
+            color: #aaa;
+        }
+
+        .durum.beklemede { border-color: #8B6914; color: #c49a6c; }
+        .durum.planlama { border-color: #c49a6c; color: var(--rr-gold); }
+        .durum.iptal { border-color: #8B3A3A; color: #c47a6c; }
+
+        .aciklama {
+            font-size: 0.9rem;
+            color: #bbb;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        .hata-mesaji {
+            background: rgba(196, 154, 108, 0.05);
+            border: 1px solid var(--rr-gold);
+            padding: 20px;
+            text-align: center;
+            color: var(--rr-gold);
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .large-touch-button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--rr-border);
+            color: #888;
+            padding: 15px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.4s ease;
+        }
+
+        .large-touch-button:hover {
+            border-color: var(--rr-gold);
+            color: var(--rr-gold);
+        }
+    </style>
+</head>
+<body>
+    <div id="musteriContainer" class="container" style="display: none;">
+        <div class="header">
+            <h1 class="main-title">ASİSTAN</h1>
+            <p>süreç takip platformu</p>
+        </div>
+
+        <div id="musteriBilgisi" class="musteri-bilgisi">
+            <h3 id="musteriAdi">Yükleniyor...</h3>
+            <p id="toplamSiparis">sipariş bilgileri hazırlanıyor</p>
+        </div>
+
+        <div class="pdf-buttons-container" id="musteriPdfButtons">
+            <a href="#" id="teklifPdfBtn" class="pdf-button">
+                <span>TEKLİF FORMU</span>
+            </a>
+            <a href="#" id="sozlesmePdfBtn" class="pdf-button">
+                <span>SÖZLEŞME</span>
+            </a>
+        </div>
+
+        <div id="loadingCustomer" class="loading" style="display:none; text-align:center; padding:20px; color:var(--rr-gold);">yükleniyor...</div>
+        <div id="hataMesaji" class="hata-mesaji" style="display: none;"></div>
+
+        <div class="surec-baslik">
+            <h2>OPERASYONEL SÜREÇ TAKVİMİ</h2>
+        </div>
+
+        <div id="musteriSiparisListesi" class="siparis-listesi"></div>
+
+        <button onclick="window.close()" class="large-touch-button">KAPAT</button>
+    </div>
+
+    <div id="demoContainer" class="container">
+        <div class="header">
+            <h1 class="main-title">ASİSTAN</h1>
+            <p>sistem deneyimi</p>
+        </div>
+
+        <div class="musteri-bilgisi">
+            <h3>AHMET OKTAY</h3>
+            <p>SİPARİŞ NO: 2026/003 | TERMİN: 28.02.2026</p>
+        </div>
+
+        <div class="pdf-buttons-container">
+            <a href="2026-003  Ahmet Oktay Teklif Formu.pdf" target="_blank" class="pdf-button active">
+                <span>TEKLİF FORMU</span>
+            </a>
+            <a href="2026-003  Ahmet Oktay Sözleşme.pdf" target="_blank" class="pdf-button active">
+                <span>SÖZLEŞME</span>
+            </a>
+        </div>
+
+        <div class="surec-baslik">
+            <h2>OPERASYONEL SÜREÇ TAKVİMİ</h2>
+        </div>
+
+        <div class="siparis-listesi">
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">20.01.2026</div><div class="durum planlama">TEKLİF</div></div><div class="aciklama">Teklif formu hazırlandı. Tutar: 230.000₺ + KDV</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">22.01.2026</div><div class="durum planlama">SÖZLEŞME</div></div><div class="aciklama">Sözleşme imzalandı, ödeme planı oluşturuldu</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">25.01.2026</div><div class="durum planlama">ÖN ÖDEME</div></div><div class="aciklama">Peşinat ödemesi alındı, imalat süreci başlatıldı</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">27.01.2026</div><div class="durum planlama">ÖLÇÜM</div></div><div class="aciklama">Mahalde detaylı ölçüm alındı, proje onaylandı</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">29.01.2026</div><div class="durum">MALZEME</div></div><div class="aciklama">MDF lam ve ham MDF malzeme siparişleri verildi</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">01.02.2026</div><div class="durum">KESİM</div></div><div class="aciklama">CNC kesim işlemlerine başlandı</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">05.02.2026</div><div class="durum beklemede">ZIMPARA</div></div><div class="aciklama">Yüzey zımpara işlemi devam ediyor</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">08.02.2026</div><div class="durum beklemede">ASTARLAMA</div></div><div class="aciklama">Su bazlı astar uygulaması yapıldı</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">12.02.2026</div><div class="durum beklemede">BOYA</div></div><div class="aciklama">Parlak lake ve mat lake boya uygulamaları</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">18.02.2026</div><div class="durum beklemede">KURUTMA</div></div><div class="aciklama">Boyalı ürünlerin kurutma işlemi</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">22.02.2026</div><div class="durum beklemede">MONTAJ</div></div><div class="aciklama">Parçaların montajı ve aksesuar takılması</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">25.02.2026</div><div class="durum">PAKETLEME</div></div><div class="aciklama">Ürünler nakliyeye hazır şekilde paketlendi</div></div></div>
+            <div class="siparis-karti"><div class="siparis-satir"><div class="siparis-ust-bilgi"><div class="tarih">28.02.2026</div><div class="durum">TESLİMAT</div></div><div class="aciklama">Teslimat ve montaj planlandığı gibi tamamlandı</div></div></div>
+        </div>
+
+        <button onclick="window.close()" class="large-touch-button">KAPAT</button>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbya8G05KVExM_E73U9FoMdXuop4nGpPEuT-CzwIED5fo0QhYAch4AKggqQx0Pd5C2CUaQ/exec';
+        
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userType = urlParams.get('type');
+            const pin = urlParams.get('pin');
+            
+            if (userType === 'customer' && pin) {
+                document.getElementById('demoContainer').style.display = 'none';
+                document.getElementById('musteriContainer').style.display = 'block';
+                loadMusteriData(pin);
+            } else {
+                document.getElementById('demoContainer').style.display = 'block';
+                document.getElementById('musteriContainer').style.display = 'none';
+            }
+        });
+
+        async function loadMusteriData(pin) {
+            const loadingEl = document.getElementById('loadingCustomer');
+            loadingEl.style.display = 'block';
+            
+            try {
+                const response = await fetch(`${WEB_APP_URL}?pin=${encodeURIComponent(pin)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMusteriData(data);
+                    showCustomerPDFs(data);
+                } else {
+                    showError('Müşteri bulunamadı');
+                    showDemoInstead();
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                showError('Bağlantı hatası');
+                showDemoInstead();
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        function showCustomerPDFs(data) {
+            const teklifBtn = document.getElementById('teklifPdfBtn');
+            const sozlesmeBtn = document.getElementById('sozlesmePdfBtn');
+            
+            if (data.teklifUrl && isValidUrl(data.teklifUrl)) {
+                teklifBtn.href = data.teklifUrl;
+                teklifBtn.target = '_blank';
+                teklifBtn.classList.add('active');
+            } else {
+                teklifBtn.classList.remove('active');
+                teklifBtn.style.opacity = '0.5';
+                teklifBtn.style.cursor = 'not-allowed';
+            }
+            
+            if (data.sozlesmeUrl && isValidUrl(data.sozlesmeUrl)) {
+                sozlesmeBtn.href = data.sozlesmeUrl;
+                sozlesmeBtn.target = '_blank';
+                sozlesmeBtn.classList.add('active');
+            } else {
+                sozlesmeBtn.classList.remove('active');
+                sozlesmeBtn.style.opacity = '0.5';
+                sozlesmeBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function showMusteriData(data) {
+            document.getElementById('musteriAdi').textContent = data.customerName || 'Müşteri';
+            document.getElementById('toplamSiparis').textContent = `Toplam ${data.totalRecords || 0} kayıt`;
+            
+            const siparisListesi = document.getElementById('musteriSiparisListesi');
+            siparisListesi.innerHTML = '';
+            
+            if (data.records && data.records.length > 0) {
+                data.records.forEach(record => {
+                    siparisListesi.appendChild(createSiparisKarti(record));
+                });
+            } else {
+                siparisListesi.innerHTML = '<div class="hata-mesaji">HENÜZ SİPARİŞ KAYDI BULUNMUYOR</div>';
+            }
+        }
+
+        function isValidUrl(string) {
+            if (!string) return false;
+            try { new URL(string); return true; } catch(e) { return false; }
+        }
+
+        function createSiparisKarti(record) {
+            let durumClass = '';
+            if (record.durum && record.durum.includes('Beklemede')) durumClass = 'beklemede';
+            else if (record.durum && record.durum.includes('Planlama')) durumClass = 'planlama';
+            else if (record.durum && record.durum.includes('İptal')) durumClass = 'iptal';
+            
+            const kart = document.createElement('div');
+            kart.className = 'siparis-karti';
+            kart.innerHTML = `
+                <div class="siparis-satir">
+                    <div class="siparis-ust-bilgi">
+                        <div class="tarih">${formatTarih(record.tarih)}</div>
+                        <div class="durum ${durumClass}">${record.durum || 'AKTİF'}</div>
+                    </div>
+                    <div class="aciklama">${record.aciklama || 'Açıklama bulunmuyor'}</div>
+                </div>
+            `;
+            return kart;
+        }
+
+        function formatTarih(dateValue) {
+            if (!dateValue) return 'BELİRSİZ';
+            try {
+                const dateStr = dateValue.toString();
+                if (dateStr.includes('T')) {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('tr-TR');
+                }
+                return dateStr;
+            } catch(e) {
+                return 'BELİRSİZ';
+            }
+        }
+
+        function showError(message) {
+            const hata = document.getElementById('hataMesaji');
+            hata.style.display = 'block';
+            hata.textContent = message;
+        }
+
+        function showDemoInstead() {
+            document.getElementById('demoContainer').style.display = 'block';
+            document.getElementById('musteriContainer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

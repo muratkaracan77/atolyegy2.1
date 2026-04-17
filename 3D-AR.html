@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3D-AR · ATOLYEGY PLATFORM</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rr-gold: #c49a6c;
+            --rr-gold-deep: #8e6d46;
+            --rr-bg: #050505;
+            --rr-border: rgba(196, 154, 108, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--rr-bg);
+            color: #f5f0e8;
+            font-family: 'Cormorant Garamond', serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        body::after {
+            content: "";
+            position: fixed; inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+            opacity: 0.15; z-index: -1; pointer-events: none;
+        }
+
+        /* SPLASH SCREEN */
+        #splashScreen {
+            position: fixed; inset: 0; background: var(--rr-bg); z-index: 5000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .text-3d-container {
+            perspective: 1500px;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: scale(1.1);
+        }
+
+        .hologram-text {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            letter-spacing: 20px;
+            font-weight: 900;
+            background: radial-gradient(circle at 30% 20%, #f3e0bc 0%, #c49a6c 35%, #a77c48 70%, #e9cf9a 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 
+                0 1px 0px rgba(0,0,0,0.2),
+                0 2px 2px rgba(0,0,0,0.2),
+                0 4px 4px rgba(0,0,0,0.2),
+                0 8px 12px rgba(0,0,0,0.4),
+                0 0 8px rgba(196,154,108,0.3);
+            animation: slowRotate 8s ease-in-out infinite;
+            transform-origin: center;
+            transform-style: preserve-3d;
+            display: inline-block;
+        }
+        
+        .hologram-text::before {
+            content: "3D-AR";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: radial-gradient(circle at 30% 20%, #dbb47a 0%, #b07d48 40%, #8f5e2e 80%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: inherit;
+            font-weight: 900;
+            letter-spacing: inherit;
+            transform: translateZ(-8px) scale(1.01);
+            z-index: -1;
+            opacity: 0.7;
+            filter: blur(0.7px);
+        }
+        
+        .hologram-text::after {
+            content: "3D-AR";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: radial-gradient(circle at 30% 20%, #a3733e 0%, #774e1f 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: inherit;
+            font-weight: 900;
+            letter-spacing: inherit;
+            transform: translateZ(-16px) scale(1.02);
+            z-index: -2;
+            opacity: 0.4;
+            filter: blur(1.5px);
+        }
+
+        @keyframes slowRotate {
+            0%, 100% { 
+                transform: rotateY(-12deg) rotateX(4deg); 
+                filter: brightness(0.92) drop-shadow(0 0 5px rgba(196,154,108,0.2));
+            }
+            50% { 
+                transform: rotateY(12deg) rotateX(-4deg) scale(1.02); 
+                filter: brightness(1.08) drop-shadow(0 0 12px rgba(196,154,108,0.4));
+            }
+        }
+
+        .splash-subtitle {
+            margin-top: 35px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            letter-spacing: 10px;
+            color: #c49a6c;
+            text-transform: uppercase;
+            font-weight: 500;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 18px;
+            border-top: 1px solid rgba(196,154,108,0.3);
+            border-bottom: 1px solid rgba(196,154,108,0.3);
+            backdrop-filter: blur(3px);
+            text-align: center;
+            word-break: keep-all;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 560px) {
+            .splash-subtitle {
+                font-size: 0.65rem;
+                letter-spacing: 6px;
+                white-space: normal;
+                padding: 6px 12px;
+                margin-top: 25px;
+            }
+            .text-3d-container {
+                transform: scale(1.05);
+            }
+        }
+
+        /* ========= ANA SHOWROOM - DÜZELTİLMİŞ ========= */
+        #mainMenu {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            animation: appEntry 1.8s ease-out;
+        }
+
+        @keyframes appEntry {
+            from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        /* BAŞLIK ALANI - KÜÇÜLTÜLDÜ, SABİT KALACAK */
+        .header {
+            flex-shrink: 0;
+            padding: 25px 20px 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--rr-border);
+            background: var(--rr-bg);
+            z-index: 10;
+        }
+
+        .main-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            letter-spacing: 12px;
+            color: var(--rr-gold);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            color: #777;
+            text-transform: uppercase;
+        }
+
+        /* KAYDIRMA ALANI */
+        .grid-container {
+            flex: 1;
+            padding: 20px 20px 30px 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ========= MODÜLLER - TEK SIRA, ALT ALTA, DİKDÖRTGEN ========= */
+        .grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .category {
+            border: 1px solid var(--rr-border);
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            background: rgba(255,255,255,0.01);
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category:active {
+            background: rgba(196, 154, 108, 0.06);
+            border-color: var(--rr-gold);
+            transform: translateY(-2px);
+        }
+
+        .category h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: var(--rr-gold);
+            font-weight: 400;
+            margin: 0;
+        }
+
+        /* AR KATMANI */
+        .ar-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 1000; display: none;
+        }
+
+        .back-btn {
+            position: absolute; top: 40px; right: 40px;
+            width: 40px; height: 40px; border: 1px solid var(--rr-border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--rr-gold); cursor: pointer; z-index: 1002;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .ar-btn {
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            background: transparent; color: var(--rr-gold);
+            border: 1px solid var(--rr-gold); padding: 18px 45px;
+            font-family: 'Cinzel', serif; letter-spacing: 4px;
+            font-size: 0.75rem; cursor: pointer; transition: 0.4s;
+            z-index: 1002;
+        }
+
+        .ar-btn:active { background: var(--rr-gold); color: #000; }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+        
+        model-viewer::part(default-ar-button) {
+            display: none !important;
+        }
+
+        /* KAYDIRMA ÇUBUĞU */
+        .grid-container::-webkit-scrollbar {
+            width: 3px;
+        }
+        .grid-container::-webkit-scrollbar-track {
+            background: rgba(196,154,108,0.1);
+        }
+        .grid-container::-webkit-scrollbar-thumb {
+            background: var(--rr-gold);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splashScreen">
+        <div class="text-3d-container">
+            <div class="hologram-text">3D-AR</div>
+        </div>
+        <div class="splash-subtitle">ARTIRILMIŞ GERÇEKLİK PLATFORMU</div>
+    </div>
+
+    <div id="mainMenu">
+        <div class="header">
+            <h1 class="main-title">3D-AR</h1>
+            <p class="subtitle">Artırılmış Gerçeklik Platformu</p>
+        </div>
+        
+        <div class="grid-container">
+            <div class="grid">
+                <div class="category" onclick="openAR('Mutfak')"><h3>MUTFAK</h3></div>
+                <div class="category" onclick="openAR('Gardrop')"><h3>GARDROP</h3></div>
+                <div class="category" onclick="openAR('Şifonyer')"><h3>ŞİFONYER</h3></div>
+                <div class="category" onclick="openAR('TV Ünitesi')"><h3>TV ÜNİTESİ</h3></div>
+                <div class="category" onclick="openAR('Portmanto')"><h3>PORTMANTO</h3></div>
+                <div class="category" onclick="openAR('Banyo')"><h3>BANYO</h3></div>
+                <div class="category" onclick="openAR('Masa')"><h3>MOBİLYA</h3></div>
+                <div class="category" onclick="openAR('Panel')"><h3>DUVAR PANELİ</h3></div>
+                <div class="category" onclick="openAR('Kapı')"><h3>KAPI SİSTEMLERİ</h3></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="arOverlay" class="ar-overlay">
+        <div class="back-btn" onclick="closeAR()">✕</div>
+        <model-viewer 
+            id="arModel"
+            src="https://muratkaracan77.github.io/deneme7/dolap.glb"
+            ar ar-modes="webxr scene-viewer quick-look"
+            camera-controls auto-rotate
+            environment-image="neutral"
+            shadow-intensity="1"
+            style="width: 100%; height: 100%;">
+        </model-viewer>
+        <button class="ar-btn" onclick="activateAR()">HACMİ MEKANA YERLEŞTİR</button>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        const mainMenu = document.getElementById('mainMenu');
+                        if (mainMenu) mainMenu.style.display = 'flex';
+                    }, 1500);
+                }
+            }, 3000);
+        });
+
+        function openAR(cat) {
+            const overlay = document.getElementById('arOverlay');
+            if (overlay) overlay.style.display = 'block';
+        }
+
+        function closeAR() {
+            const overlay = document.getElementById('arOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function activateAR() {
+            const mv = document.getElementById('arModel');
+            if(mv && mv.activateAR) {
+                mv.activateAR();
+            } else {
+                alert("AR özelliği bu cihazda desteklenmiyor veya model-viewer hazır değil.");
+            }
+        }
+    </script>
+</body>
+</html>

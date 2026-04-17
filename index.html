@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>PLATFORM · Atolyegy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,500;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --rr-gold: #c49a6c; 
+            --rr-bg: #0a0a0a;   
+            --rr-cream: #f5f0e8;
+            --rr-border: rgba(196, 154, 108, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--rr-bg);
+            color: var(--rr-cream);
+            font-family: 'Cormorant Garamond', serif;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            opacity: 0.3;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .intro-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .intro-slot {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.4rem, 6vw, 2.5rem);
+            letter-spacing: clamp(2px, 3vw, 8px);
+            color: var(--rr-gold);
+            opacity: 0;
+            white-space: normal;
+            word-break: keep-all;
+            text-align: center;
+            animation: fadeInOut 5s ease-in-out forwards;
+            padding: 0 15px;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; filter: blur(15px); transform: scale(1.1); }
+            40%, 75% { opacity: 1; filter: blur(0); transform: scale(1.0); }
+            100% { opacity: 0; filter: blur(5px); transform: scale(0.98); }
+        }
+
+        .global-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 400;
+            background: linear-gradient(135deg, #c49a6c 0%, #e8d5b5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: clamp(4px, 3vw, 10px);
+            font-size: clamp(1.8rem, 8vw, 3rem);
+            text-align: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin-top: -120px;
+            width: 100%;
+            z-index: 20;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 550px) {
+            .global-title {
+                white-space: normal;
+                letter-spacing: clamp(2px, 2vw, 6px);
+                font-size: clamp(1.5rem, 7vw, 2.5rem);
+                margin-top: -100px;
+            }
+        }
+
+        .transition-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 15;
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+
+        .permission-inner {
+            transition: opacity 0.75s ease, filter 0.75s ease;
+        }
+
+        .permission-inner.hide {
+            opacity: 0;
+            filter: blur(8px);
+            pointer-events: none;
+        }
+
+        .permission-desc {
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #aaa;
+            margin-bottom: 40px;
+            font-size: clamp(0.9rem, 4vw, 1rem);
+        }
+
+        .permission-button {
+            background: transparent;
+            color: var(--rr-gold);
+            border: 1px solid var(--rr-gold);
+            padding: 15px 40px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .permission-button:hover {
+            background: var(--rr-gold);
+            color: #000;
+            box-shadow: 0 0 30px rgba(196, 154, 108, 0.2);
+        }
+
+        .pin-inner {
+            opacity: 0;
+            filter: blur(8px);
+            transition: opacity 0.75s ease, filter 0.75s ease;
+            pointer-events: none;
+        }
+
+        .pin-inner.show {
+            opacity: 1;
+            filter: blur(0);
+            pointer-events: auto;
+        }
+
+        .giris-kutulari {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .giris-kutulari {
+                gap: 30px;
+            }
+        }
+
+        .giris-kutusu {
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .giris-kutusu h3 {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 4px;
+            font-size: 1.2rem;
+        }
+
+        .musteri-title {
+            color: var(--rr-gold);
+        }
+
+        .misafir-title {
+            color: #555;
+        }
+
+        .giris-line {
+            width: 40px;
+            height: 1px;
+            background: var(--rr-gold);
+            margin: 10px auto;
+        }
+
+        #tarihAlani {
+            font-family: 'Cinzel';
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            color: #444;
+            position: fixed;
+            top: 40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 25;
+        }
+
+        #platform-container {
+            background: var(--rr-bg);
+            padding: 60px 12px 80px 12px;
+            overflow-y: auto;
+            height: 100vh;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 30;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            border: 1px solid var(--rr-border);
+            padding: 30px 12px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .module {
+            border-bottom: 1px solid var(--rr-border);
+            padding: 16px 8px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            filter: blur(8px);
+            animation: cardAppear 0.6s ease-out forwards;
+        }
+
+        .grid .module:nth-child(1) { animation-delay: 0.05s; }
+        .grid .module:nth-child(2) { animation-delay: 0.10s; }
+        .grid .module:nth-child(3) { animation-delay: 0.15s; }
+        .grid .module:nth-child(4) { animation-delay: 0.20s; }
+        .grid .module:nth-child(5) { animation-delay: 0.25s; }
+        .grid .module:nth-child(6) { animation-delay: 0.30s; }
+        .grid .module:nth-child(7) { animation-delay: 0.35s; }
+        .grid .module:nth-child(8) { animation-delay: 0.40s; }
+
+        @keyframes cardAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        .module:hover {
+            border-bottom-color: var(--rr-gold);
+            background: rgba(196, 154, 108, 0.03);
+        }
+
+        .module h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--rr-gold);
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .module p {
+            font-size: 1.3rem;
+            color: #888;
+            font-style: italic;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 550px) {
+            .module h3 {
+                font-size: 1.3rem;
+                letter-spacing: 2px;
+            }
+            .module p {
+                font-size: 1.1rem;
+            }
+            .module {
+                padding: 14px 6px;
+            }
+        }
+
+        .platform-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--rr-border);
+            text-align: center;
+            font-style: italic;
+            font-size: 0.75rem;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .platform-footer span {
+            color: var(--rr-gold);
+            font-style: normal;
+        }
+
+        .contact-modal, #musteri-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 4000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .contact-content, .modal-icerik {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid var(--rr-gold);
+            border-radius: 4px;
+            padding: 30px 25px;
+        }
+
+        .modal-icerik {
+            background: #0d0d0d;
+            text-align: center;
+        }
+
+        .pin-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--rr-gold);
+            color: var(--rr-gold);
+            font-family: 'Cinzel', monospace;
+            font-size: 2rem;
+            letter-spacing: 12px;
+            text-align: center;
+            width: 100%;
+            margin: 40px 0;
+            text-transform: uppercase;
+        }
+
+        .pin-input:focus {
+            outline: none;
+        }
+
+        @media (max-width: 550px) {
+            .pin-input {
+                letter-spacing: 6px;
+                font-size: 1.5rem;
+            }
+        }
+
+        .close-modal, .contact-action-btn {
+            background: transparent;
+            border: 1px solid var(--rr-border);
+            color: var(--rr-gold);
+            padding: 12px 20px;
+            width: 100%;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .contact-action-btn {
+            margin-top: 0;
+            width: auto;
+            padding: 8px 16px;
+            letter-spacing: 2px;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        button:hover {
+            background: var(--rr-gold);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="intro-wrapper" id="introWrapper">
+        <div class="intro-slot">P L A T F O R M</div>
+    </div>
+
+    <div class="main-app" id="mainApp" style="display:none;">
+        
+        <div class="global-title">PLATFORM</div>
+
+        <div class="transition-content">
+            <div id="permissionContent" class="permission-inner">
+                <p class="permission-desc">Atolyegy Mimarlık Dijital Arşivi</p>
+                <button class="permission-button" onclick="startTransition()">OTURUMU AÇ</button>
+            </div>
+
+            <div id="pinContent" class="pin-inner">
+                <div class="giris-kutulari">
+                    <div class="giris-kutusu" onclick="musteriGirisGoster()">
+                        <h3 class="musteri-title">MÜŞTERİ</h3>
+                        <div class="giris-line"></div>
+                    </div>
+                    <div class="giris-kutusu" onclick="misafirGiris()">
+                        <h3 class="misafir-title">MİSAFİR</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tarihAlani"></div>
+
+        <div id="platform-container">
+            <div class="container">
+                <header style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="font-family:'Cinzel', serif; font-size: clamp(1.2rem, 6vw, 1.8rem); letter-spacing: 6px; color: var(--rr-gold); margin-bottom: 15px; font-weight: 400;">PLATFORM</h2>
+                    <div style="width:80px; height:1px; background:var(--rr-gold); margin:15px auto;"></div>
+                </header>
+
+                <div class="grid">
+                    <div class="module" onclick="openModule('fiyatla')">
+                        <h3>FİYATLA</h3>
+                        <p>Maliyet ve Bütçe Planlama</p>
+                    </div>
+                    <div class="module" onclick="openModule('rehber')">
+                        <h3>REHBER</h3>
+                        <p>Materyal ve Zanaat Kütüphanesi</p>
+                    </div>
+                    <div class="module" onclick="openModule('3D-AR')">
+                        <h3>3D-AR</h3>
+                        <p>Artırılmış Gerçeklik Vizyonu</p>
+                    </div>
+                    <div class="module" onclick="openSocialModal()">
+                        <h3>SOSYAL</h3>
+                        <p>Platform Topluluk Ağı</p>
+                    </div>
+                    <div class="module" onclick="openAsistan()">
+                        <h3>ASİSTAN</h3>
+                        <p>Canlı Sipariş ve Süreç Takibi</p>
+                    </div>
+                    <div class="module" onclick="openModule('aı')">
+                        <h3>AI</h3>
+                        <p>Yapay Zeka Tasarım Desteği</p>
+                    </div>
+                    <div class="module" onclick="openModule('vizyon')">
+                        <h3>VİZYON</h3>
+                        <p>Satış Sonrası Premium Hizmet</p>
+                    </div>
+                    <div class="module" onclick="openKidsMenu()">
+                        <h3>KIDS</h3>
+                        <p>Genç Tasarımcılar İçin Oyun Alanı</p>
+                    </div>
+                </div>
+
+                <div class="platform-footer">
+                    Platform, Atolyegy'nin Tescilli Teknoloji Altyapısıdır <span>™️</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="musteri-modal" style="display:none;">
+            <div class="modal-icerik">
+                <h2 style="font-family:'Cinzel'; font-size:1.2rem; color:var(--rr-gold);">GÜVENLİ ERİŞİM</h2>
+                <input type="text" id="pinInput" class="pin-input" maxlength="6" placeholder="••••••" inputmode="text" autocomplete="off">
+                <div id="loadingPin" style="display:none; color:#c49a6c; margin:10px 0;">Doğrulanıyor...</div>
+                <button class="permission-button" onclick="kontrolPIN()" style="margin-top:0;">ONAYLA</button>
+                <p onclick="modalKapat()" style="margin-top:30px; font-size:0.7rem; letter-spacing:2px; cursor:pointer; color:#444;">VAZGEÇ</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-modal" id="contactModal">
+        <div class="contact-content">
+            <div class="contact-title" style="font-family:'Cinzel'; color:var(--rr-gold);">İLETİŞİM</div>
+            <div class="contact-option">
+                <div class="contact-person">Uğur AYDIN</div>
+                <div class="contact-role">Baş Tasarım Danışmanı</div>
+                <div class="contact-actions">
+                    <button class="contact-action-btn" onclick="openWhatsApp('05312431680')">WhatsApp</button>
+                    <button class="contact-action-btn" onclick="callPhone('05312431680')">Telefon</button>
+                </div>
+            </div>
+            <div class="contact-option">
+                <div class="contact-person">Murat KARACAN</div>
+                <div class="contact-role">Entegrasyon Sorumlusu</div>
+                <div class="contact-actions">
+                    <button class="contact-action-btn" onclick="openWhatsApp('05366959195')">WhatsApp</button>
+                    <button class="contact-action-btn" onclick="callPhone('05366959195')">Telefon</button>
+                </div>
+            </div>
+            <button class="close-modal" onclick="closeContactModal()">KAPAT</button>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbya8G05KVExM_E73U9FoMdXuop4nGpPEuT-CzwIED5fo0QhYAch4AKggqQx0Pd5C2CUaQ/exec';
+        let currentCustomer = null;
+        let currentSpeech = null;
+        let userType = null;
+        
+        const greetingMessages = ["Hoş geldiniz {isim}. Arşivimiz, belirlediğiniz yüksek standartların ötesine geçmek üzere güncellendi."];
+        const misafirGreeting = "Atolyegy standartlarının dijital yansımasına davetlisiniz. Seçkin bir deneyim sizi bekliyor.";
+        
+        function speakGreeting(text) {
+            if ('speechSynthesis' in window) {
+                if (currentSpeech) window.speechSynthesis.cancel();
+                currentSpeech = new SpeechSynthesisUtterance(text);
+                currentSpeech.lang = 'tr-TR';
+                currentSpeech.rate = 1.00;
+                window.speechSynthesis.speak(currentSpeech);
+            }
+        }
+        
+        const ses = new Audio('https://raw.githubusercontent.com/ustaproecosystem-hub/atolyegy-sounds/main/Dolby%20Atmos_%20Amaze%20%20Trailer%20%20Dolby%20(mp3cut.net).mp3');
+        ses.volume = 0.9;
+        ses.load();
+
+        setTimeout(() => {
+            const intro = document.getElementById('introWrapper');
+            intro.style.transition = 'opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                const tarih = new Date().toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+                document.getElementById('tarihAlani').innerText = tarih;
+            }, 1500);
+        }, 5000);
+
+        function startTransition() {
+            ses.play().catch(e => console.log('Ses çalışmadı:', e));
+            const permissionInner = document.getElementById('permissionContent');
+            const pinInner = document.getElementById('pinContent');
+            permissionInner.classList.add('hide');
+            setTimeout(() => {
+                pinInner.classList.add('show');
+            }, 750);
+        }
+
+        function musteriGirisGoster() {
+            document.getElementById('musteri-modal').style.display = 'flex';
+            document.getElementById('pinInput').focus();
+        }
+
+        function modalKapat() {
+            document.getElementById('musteri-modal').style.display = 'none';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('loadingPin').style.display = 'none';
+        }
+
+        function misafirGiris() {
+            userType = 'misafir';
+            currentCustomer = { fullName: "MİSAFİR", ad: "Misafir", pin: "MISAFIR" };
+            modalKapat();
+            document.getElementById('platform-container').style.display = 'block';
+            setTimeout(() => speakGreeting(misafirGreeting), 1000);
+        }
+
+        async function kontrolPIN() {
+            const pin = document.getElementById('pinInput').value.trim().toUpperCase();
+            const loadingElement = document.getElementById('loadingPin');
+            if (!pin || pin.length !== 6) { alert('6 haneli PIN kodunuzu giriniz!'); return; }
+            loadingElement.style.display = 'block';
+            try {
+                const response = await fetch(`${WEB_APP_URL}?pin=${encodeURIComponent(pin)}`);
+                const data = await response.json();
+                if (data.success) {
+                    userType = 'customer';
+                    currentCustomer = { ad: data.customerName.split(' ')[0], fullName: data.customerName, pin: pin };
+                    modalKapat();
+                    document.getElementById('platform-container').style.display = 'block';
+                    setTimeout(() => {
+                        let greeting = greetingMessages[0].replace('{isim}', currentCustomer.fullName);
+                        speakGreeting(greeting);
+                    }, 1000);
+                } else {
+                    alert('Geçersiz PIN kodu!');
+                    document.getElementById('pinInput').value = '';
+                    document.getElementById('pinInput').focus();
+                }
+            } catch (error) {
+                alert('Bağlantı hatası!');
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        function openModule(moduleName) {
+            const width = Math.min(450, window.screen.width - 40);
+            const height = Math.min(700, window.screen.height - 100);
+            window.open(moduleName + '.html', moduleName, `width=${width},height=${height},scrollbars=yes,resizable=yes`);
+        }
+
+        function openAsistan() {
+            const width = Math.min(450, window.screen.width - 40);
+            const height = Math.min(700, window.screen.height - 100);
+            if (userType === 'customer' && currentCustomer && currentCustomer.pin !== 'MISAFIR') {
+                window.open(`asistan.html?type=customer&pin=${currentCustomer.pin}`, 'Asistan', `width=${width},height=${height}`);
+            } else {
+                window.open(`asistan.html?type=demo`, 'Asistan', `width=${width},height=${height}`);
+            }
+        }
+
+        // ========= YENİ: SOSYAL butonu artık doğrudan sosyal.html açıyor =========
+        function openSocialModal() { 
+            window.open('sosyal.html', 'Sosyal', 'width=450,height=700,scrollbars=yes,resizable=yes'); 
+        }
+
+        function openContactModal() { 
+            document.getElementById('contactModal').style.display = 'flex'; 
+        }
+        
+        function closeContactModal() { 
+            document.getElementById('contactModal').style.display = 'none'; 
+        }
+        
+        function openWhatsApp(phone) { 
+            window.open(`https://wa.me/90${phone}?text=${encodeURIComponent('Merhaba, Atolyegy hakkında bilgi almak istiyorum.')}`, '_blank'); 
+            closeContactModal(); 
+        }
+        
+        function callPhone(phone) { 
+            window.open(`tel:+90${phone}`, '_self'); 
+            closeContactModal(); 
+        }
+        
+        function openLink(url) { 
+            window.open(url, '_blank'); 
+        }
+        
+        function openKidsMenu() { 
+            window.open('kids.html', 'Kids', 'width=450,height=700,scrollbars=yes'); 
+        }
+
+        document.getElementById('pinInput')?.addEventListener('input', function(e) { this.value = this.value.toUpperCase(); });
+        document.getElementById('pinInput')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') kontrolPIN(); });
+        window.addEventListener('beforeunload', () => { if (currentSpeech) window.speechSynthesis.cancel(); });
+    </script>
+</body>
+</html>

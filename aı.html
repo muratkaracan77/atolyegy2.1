@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PANDORA · ATOLYEGY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Cormorant+Garamond:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rr-gold: #c49a6c;
+            --rr-bg: #0a0a0a;
+            --rr-cream: #f5f0e8;
+            --rr-border: rgba(196, 154, 108, 0.15);
+            --rr-input-bg: #111111;
+            --rr-muted: #8a7a6a;
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        /* KRİTİK: HTML ve BODY tam yükseklik */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background-color: var(--rr-bg);
+            color: var(--rr-cream);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CHAT CONTAINER - 100dvh ile dinamik yükseklik */
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 768px;
+            margin: 0 auto;
+            width: 100%;
+            background-color: var(--rr-bg);
+            border-left: 1px solid var(--rr-border);
+            border-right: 1px solid var(--rr-border);
+            height: 100dvh;
+            max-height: 100dvh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: rgba(10, 10, 10, 0.95);
+            border-bottom: 1px solid var(--rr-border);
+            padding: 15px 20px 10px 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            color: var(--rr-gold);
+            font-size: 1.5rem;
+            letter-spacing: 8px;
+            font-family: 'Cinzel', serif;
+            margin: 0;
+            margin-bottom: 8px;
+        }
+
+        /* SES DALGASI ÇİZGİSİ */
+        .sound-wave {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            height: 28px;
+            margin-top: 5px;
+        }
+
+        .wave-line {
+            width: 3px;
+            background-color: var(--rr-gold);
+            border-radius: 2px;
+            transition: all 0.1s ease;
+            height: 8px;
+            opacity: 0.4;
+        }
+
+        .sound-wave.active .wave-line {
+            opacity: 1;
+        }
+
+        .sound-wave.active .wave-line:nth-child(1) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0s; }
+        .sound-wave.active .wave-line:nth-child(2) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0.1s; }
+        .sound-wave.active .wave-line:nth-child(3) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0.2s; }
+        .sound-wave.active .wave-line:nth-child(4) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0.15s; }
+        .sound-wave.active .wave-line:nth-child(5) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0.05s; }
+        .sound-wave.active .wave-line:nth-child(6) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0.25s; }
+        .sound-wave.active .wave-line:nth-child(7) { animation: waveAnim 0.6s ease-in-out infinite; animation-delay: 0.12s; }
+
+        @keyframes waveAnim {
+            0%, 100% { height: 8px; }
+            50% { height: 24px; }
+        }
+
+        /* CHAT BOX - OTOMATİK KAYDIRMA, INPUT ALANINI EZMEZ */
+        #chat-box {
+            flex: 1;
+            min-height: 0;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: linear-gradient(to bottom, #0a0a0a, #111);
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 4px;
+            max-width: 85%;
+            line-height: 1.5;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+            animation: fadeIn 0.3s ease-in;
+            word-break: break-word;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: rgba(196, 154, 108, 0.1);
+            margin-left: auto;
+            border: 1px solid var(--rr-border);
+            border-bottom-right-radius: 0;
+        }
+
+        .ai-message {
+            background-color: rgba(20, 20, 24, 0.9);
+            margin-right: auto;
+            border: 1px solid var(--rr-border);
+            color: var(--rr-gold);
+            border-bottom-left-radius: 0;
+        }
+
+        /* INPUT ALANI - HER ZAMAN GÖRÜNÜR, ALTA SABİTLENMİŞ */
+        #input-area {
+            flex-shrink: 0;
+            padding: 15px 20px;
+            padding-bottom: calc(15px + var(--safe-area-inset-bottom));
+            border-top: 1px solid var(--rr-border);
+            display: flex;
+            gap: 10px;
+            background: var(--rr-bg);
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid var(--rr-border);
+            border-radius: 4px;
+            background-color: var(--rr-input-bg);
+            color: var(--rr-cream);
+            font-size: 16px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        #questionInput:focus {
+            outline: none;
+            border-color: var(--rr-gold);
+        }
+
+        #askButton {
+            padding: 0 25px;
+            border: 1px solid var(--rr-gold);
+            background: transparent;
+            color: var(--rr-gold);
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+        }
+
+        #askButton:active { transform: scale(0.98); background: var(--rr-gold); color: #000; }
+        #askButton:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        #status {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--rr-muted);
+            padding: 5px 0;
+            font-style: italic;
+            background: var(--rr-bg);
+            flex-shrink: 0;
+            margin: 0;
+        }
+
+        /* SCROLLBAR */
+        #chat-box::-webkit-scrollbar {
+            width: 5px;
+        }
+        #chat-box::-webkit-scrollbar-track {
+            background: var(--rr-input-bg);
+        }
+        #chat-box::-webkit-scrollbar-thumb {
+            background: var(--rr-gold);
+            border-radius: 3px;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: 8px;
+        }
+        
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: var(--rr-gold);
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        /* LANDSCAPE (YATAY) MOD İÇİN DÜZELTME */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .header { padding: 8px 20px; }
+            h1 { font-size: 1.2rem; margin-bottom: 4px; }
+            .sound-wave { height: 20px; margin-top: 2px; }
+            #chat-box { padding: 12px; gap: 10px; }
+            .message { padding: 8px 12px; font-size: 0.9rem; }
+            #input-area { padding: 10px 20px; }
+            #questionInput { padding: 10px 12px; }
+            #askButton { padding: 0 20px; }
+            #status { font-size: 0.65rem; padding: 2px 0; }
+        }
+
+        /* DAR EKRANLAR İÇİN */
+        @media (max-width: 480px) {
+            .header { padding: 12px 15px 8px 15px; }
+            h1 { font-size: 1.3rem; letter-spacing: 6px; }
+            #chat-box { padding: 15px; gap: 12px; }
+            .message { max-width: 90%; font-size: 0.95rem; padding: 10px 14px; }
+            #input-area { padding: 12px 15px; gap: 8px; }
+            #askButton { padding: 0 18px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div class="header">
+        <h1>PANDORA</h1>
+        <div class="sound-wave" id="soundWave">
+            <div class="wave-line"></div>
+            <div class="wave-line"></div>
+            <div class="wave-line"></div>
+            <div class="wave-line"></div>
+            <div class="wave-line"></div>
+            <div class="wave-line"></div>
+            <div class="wave-line"></div>
+        </div>
+    </div>
+    
+    <div id="chat-box">
+        <div class="message ai-message" id="welcome-message"></div>
+    </div>
+    
+    <p id="status">Sistem Hazır</p>
+    
+    <div id="input-area">
+        <input type="text" id="questionInput" placeholder="Mesajınızı buraya bırakın..." autocomplete="off">
+        <button id="askButton">GÖNDER</button>
+    </div>
+</div>
+
+<script>
+    const GEMINI_API_KEY = "AIzaSyCgRRJ3ZgL5bcv6s3OAp9yg9LXYDF-sC1Y";
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const chatBox = document.getElementById('chat-box');
+    const questionInput = document.getElementById('questionInput');
+    const statusMessage = document.getElementById('status');
+    const askButton = document.getElementById('askButton');
+    const welcomeMessageDiv = document.getElementById('welcome-message');
+    const soundWave = document.getElementById('soundWave');
+
+    let isSpeaking = false;
+    let isProcessing = false;
+    let currentController = null;
+    let currentUtterance = null;
+    
+    // Ses dalgasını aktif/pasif yap
+    function activateSoundWave(active) {
+        if (active) {
+            soundWave.classList.add('active');
+        } else {
+            soundWave.classList.remove('active');
+        }
+    }
+    
+    // OTOMATİK KAYDIRMA - SON MESAJ HER ZAMAN GÖRÜNÜR
+    function scrollToBottomSmooth() {
+        setTimeout(() => {
+            chatBox.scrollTo({
+                top: chatBox.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 50);
+    }
+    
+    function scrollToBottomInstant() {
+        setTimeout(() => {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 10);
+    }
+    
+    const SYSTEM_PROMPT = `Sen Atolyegy Mimarlık asistanı Pandora'sın. 
+Profesyonel, zarif, minimalist ve ilham verici cevaplar ver. 
+Mimarlık dünyasına hakimsin. 
+Müşterilere Atolyegy'nin vizyonunu yansıt.
+Cevapların kısa, öz ve net olsun.
+KESİNLİKLE EMOJİ KULLANMA.
+Tamamen profesyonel ve metin tabanlı cevaplar ver.`;
+    
+    const GREETING_WORDS = ['selam', 'merhaba', 'nasılsın', 'naber', 'iyi günler', 'günaydın', 'iyi akşamlar', 'hey', 'hi', 'hello'];
+    const FIXED_GREETING_RESPONSE = "Merhaba. Ben Atolyegy Mimarlık tarafından geliştirilen yapay zeka destekli dijital içerik asistanınız PANDORA. Size nasıl yardımcı olabilirim?";
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeApp();
+    });
+
+    function setWelcomeMessage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userName = urlParams.get('name');
+        const userSurname = urlParams.get('surname');
+
+        let welcomeText = "Merhaba";
+
+        if (userName && userSurname) {
+            welcomeText = `Merhaba ${userName} ${userSurname}`;
+        } else if (userName) {
+            welcomeText = `Merhaba ${userName}`;
+        }
+
+        welcomeMessageDiv.textContent = welcomeText;
+        scrollToBottomInstant();
+        
+        setTimeout(() => {
+            speakResponse(welcomeText).catch(error => {
+                console.log("Seslendirme hatası:", error);
+            });
+        }, 500);
+    }
+
+    function initializeApp() {
+        setWelcomeMessage(); 
+        questionInput.focus();
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        questionInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isProcessing) {
+                e.preventDefault();
+                sendPrompt();
+            }
+        });
+
+        askButton.addEventListener('click', function() {
+            if (!isProcessing) {
+                sendPrompt();
+            }
+        });
+    }
+
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+        messageDiv.textContent = text;
+        chatBox.appendChild(messageDiv);
+        scrollToBottomSmooth();
+    }
+
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai-message';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = 'Pandora düşünüyor<span class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span>';
+        chatBox.appendChild(typingDiv);
+        scrollToBottomSmooth();
+    }
+
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    function updateUIForProcessing(processing) {
+        isProcessing = processing;
+        questionInput.disabled = processing;
+        askButton.disabled = processing;
+        
+        if (processing) {
+            questionInput.placeholder = "Pandora düşünüyor...";
+            statusMessage.textContent = "Pandora düşünüyor...";
+        } else {
+            questionInput.placeholder = "Mesajınızı buraya bırakın...";
+            statusMessage.textContent = "Sistem Hazır";
+            questionInput.focus();
+        }
+    }
+
+    function stopSpeaking() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        isSpeaking = false;
+        activateSoundWave(false);
+    }
+
+    function speakResponse(text) {
+        return new Promise((resolve) => {
+            if (!('speechSynthesis' in window)) {
+                resolve();
+                return;
+            }
+
+            stopSpeaking();
+            
+            setTimeout(() => {
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'tr-TR';
+                currentUtterance.rate = 0.9;
+                currentUtterance.volume = 1.0;
+                currentUtterance.pitch = 1.0;
+                
+                currentUtterance.onstart = function() {
+                    isSpeaking = true;
+                    activateSoundWave(true);
+                };
+                
+                currentUtterance.onend = () => { 
+                    isSpeaking = false;
+                    activateSoundWave(false);
+                    currentUtterance = null;
+                    resolve();
+                };
+                
+                currentUtterance.onerror = () => {
+                    isSpeaking = false;
+                    activateSoundWave(false);
+                    currentUtterance = null;
+                    resolve();
+                };
+                
+                window.speechSynthesis.speak(currentUtterance);
+            }, 100);
+        });
+    }
+
+    function isGreetingMessage(message) {
+        const lowerMessage = message.toLowerCase().trim();
+        return GREETING_WORDS.some(word => lowerMessage.includes(word));
+    }
+
+    async function sendPrompt(promptText = questionInput.value) {
+        if (!promptText.trim() || isProcessing) {
+            return;
+        }
+        
+        stopSpeaking();
+        
+        currentController = new AbortController();
+        updateUIForProcessing(true);
+        
+        addMessage(promptText, 'user');
+        questionInput.value = '';
+        
+        if (isGreetingMessage(promptText)) {
+            hideTypingIndicator();
+            addMessage(FIXED_GREETING_RESPONSE, 'ai');
+            await speakResponse(FIXED_GREETING_RESPONSE);
+            updateUIForProcessing(false);
+            currentController = null;
+            return;
+        }
+        
+        showTypingIndicator();
+
+        try {
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: SYSTEM_PROMPT + " Kullanıcı sorusu: " + promptText
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 8192,
+                }
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+                signal: currentController.signal
+            });
+
+            if (!response.ok) {
+                throw new Error(`API hatası: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (!data.candidates || !data.candidates[0]) {
+                throw new Error("API'den geçersiz yanıt alındı");
+            }
+
+            const geminiResponse = data.candidates[0].content.parts[0].text;
+
+            if (!geminiResponse) {
+                throw new Error("Model yanıt vermedi");
+            }
+            
+            hideTypingIndicator();
+            addMessage(geminiResponse, 'ai');
+            await speakResponse(geminiResponse);
+
+        } catch (error) {
+            console.error("Hata:", error);
+            hideTypingIndicator();
+            
+            if (error.name === 'AbortError') {
+                addMessage("İstek iptal edildi.", 'ai');
+            } else {
+                addMessage("Üzgünüm, teknik bir sorun oluştu. Lütfen tekrar deneyin.", 'ai');
+            }
+        } finally {
+            updateUIForProcessing(false);
+            currentController = null;
+        }
+    }
+
+    function gentleCleanup() {
+        if (currentController && !isProcessing) {
+            try {
+                currentController.abort();
+            } catch (e) {}
+            currentController = null;
+        }
+        
+        if (!isSpeaking) {
+            stopSpeaking();
+        }
+    }
+
+    window.addEventListener('beforeunload', gentleCleanup);
+    window.addEventListener('pagehide', gentleCleanup);
+    
+    // GÖRÜNÜM DEĞİŞİKLİĞİNDE SON MESAJI GÖSTER
+    window.addEventListener('resize', function() {
+        scrollToBottomInstant();
+    });
+
+</script>
+
+</body>
+</html>

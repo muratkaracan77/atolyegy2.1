@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Fiyatla - PLATFORM</title>
+    <style>
+        /* =============== 3D-AR'DAN ALINAN RENK VE FONT TANIMLARI =============== */
+        :root {
+            --rr-gold: #c49a6c;
+            --rr-gold-deep: #8e6d46;
+            --rr-bg: #050505;
+            --rr-border: rgba(196, 154, 108, 0.12);
+            --rr-gold-gradient: radial-gradient(circle at 30% 20%, #f3e0bc 0%, #c49a6c 35%, #a77c48 70%, #e9cf9a 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            /* 3D-AR'dan alınan arka plan rengi ve dokusu */
+            background-color: var(--rr-bg);
+            color: #f5f0e8;
+            font-family: 'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 3D-AR'dan alınan rafine arka plan dokusu */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            height: 95vh;
+            margin: 0 auto;
+            background: rgba(10, 10, 12, 0.95);
+            backdrop-filter: blur(0px);
+            border-radius: 4px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--rr-border);
+            overflow: hidden;
+            border: 1px solid var(--rr-border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8) !important;
+            color: var(--rr-gold) !important;
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--rr-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .header-content {
+            text-align: left;
+            flex: 1;
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', 'Georgia', serif;
+            font-size: 1.3em;
+            margin-bottom: 2px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: var(--rr-gold-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.7em;
+            opacity: 0.7;
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+
+        .home-btn {
+            background: rgba(196, 154, 108, 0.15) !important;
+            color: var(--rr-gold) !important;
+            border: 1px solid var(--rr-border) !important;
+            padding: 8px 12px;
+            border-radius: 0;
+            font-size: 0.8em;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            margin-left: 10px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .home-btn:active {
+            background: rgba(196, 154, 108, 0.3) !important;
+            transform: scale(0.95);
+        }
+
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .navigation {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            border-top: 1px solid var(--rr-border);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 0;
+            font-size: 1em;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: 1px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--rr-gold);
+            border: 1px solid var(--rr-border);
+        }
+
+        .back-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .next-btn {
+            background: var(--rr-gold);
+            color: #050505;
+            border: 1px solid var(--rr-gold);
+            font-weight: 600;
+        }
+
+        .next-btn:active {
+            background: var(--rr-gold-deep);
+            color: white;
+        }
+
+        .next-btn:disabled, .back-btn:disabled {
+            background: rgba(255, 255, 255, 0.03);
+            color: #3a3a3a;
+            border-color: rgba(196, 154, 108, 0.2);
+            cursor: not-allowed;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .product-btn {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--rr-gold);
+            border: 1px solid var(--rr-border);
+            padding: 15px 8px;
+            border-radius: 0;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: 1px;
+        }
+
+        .product-btn:active {
+            background: rgba(196, 154, 108, 0.1);
+            border-color: var(--rr-gold);
+        }
+
+        .product-btn.selected {
+            background: var(--rr-gold);
+            color: #050505;
+            border-color: var(--rr-gold);
+        }
+
+        .option-grid {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--rr-border);
+            padding: 15px;
+            border-radius: 0;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: var(--rr-gold);
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: 1px;
+        }
+
+        .option-btn:active {
+            background: rgba(196, 154, 108, 0.1);
+            border-color: var(--rr-gold);
+        }
+
+        .option-btn.selected {
+            background: var(--rr-gold);
+            color: #050505;
+            border-color: var(--rr-gold);
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid var(--rr-border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--rr-gold);
+        }
+
+        .checkbox-option:active {
+            background: rgba(196, 154, 108, 0.1);
+            border-color: var(--rr-gold);
+        }
+
+        .checkbox-option.selected {
+            background: var(--rr-gold);
+            color: #050505;
+            border-color: var(--rr-gold);
+        }
+
+        .checkbox-option input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--rr-gold);
+        }
+
+        .text-input, .number-input, .dimension-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--rr-border);
+            font-size: 1em;
+            font-family: 'Cormorant Garamond', serif;
+            background: rgba(0, 0, 0, 0.6);
+            color: var(--rr-gold);
+        }
+
+        .text-input:focus, .number-input:focus, .dimension-input:focus {
+            outline: none;
+            border-color: var(--rr-gold);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .dimension-unit {
+            position: relative;
+        }
+
+        .dimension-unit::after {
+            content: "cm";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--rr-gold);
+            opacity: 0.6;
+            font-weight: 400;
+        }
+
+        .section-title {
+            color: var(--rr-gold);
+            margin: 20px 0 10px 0;
+            font-size: 1.1em;
+            border-left: 3px solid var(--rr-gold);
+            padding-left: 10px;
+            font-weight: 500;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .whatsapp-btn {
+            background: var(--rr-gold);
+            color: #050505;
+            border: 1px solid var(--rr-gold);
+            padding: 18px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+        }
+
+        .whatsapp-btn:active {
+            background: var(--rr-gold-deep);
+            color: white;
+        }
+
+        .warning-screen {
+            text-align: center;
+            padding: 40px 20px;
+            background: transparent;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .warning-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .warning-text {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--rr-border);
+            padding: 25px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: var(--rr-gold);
+        }
+
+        .countdown {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--rr-gold);
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--rr-border);
+            color: var(--rr-gold);
+        }
+
+        .photo-reminder {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--rr-border);
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            color: var(--rr-gold);
+        }
+
+        .photo-reminder strong {
+            color: var(--rr-gold);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .price-range {
+            background: var(--rr-gold);
+            color: #050505;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .price-range h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+        }
+
+        .price-amount {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .price-note {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .premium-note {
+            background: rgba(196, 154, 108, 0.1);
+            color: var(--rr-gold);
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 0.9em;
+            line-height: 1.5;
+            font-weight: 600;
+            font-style: italic;
+            border: 1px solid var(--rr-border);
+        }
+
+        .ai-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            font-style: italic;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7em;
+            color: var(--rr-gold);
+            border: 1px solid var(--rr-border);
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: var(--rr-gold);
+            margin-bottom: 20px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-family: 'Cinzel', serif;
+        }
+
+        p {
+            color: rgba(245, 240, 232, 0.7);
+        }
+
+        .alert-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alert-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .alert-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--rr-gold);
+            border: 1px solid var(--rr-border);
+        }
+
+        .alert-confirm {
+            background: var(--rr-gold);
+            color: #050505;
+            border: 1px solid var(--rr-gold);
+            font-weight: 600;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--rr-gold);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+            font-size: 0.85em;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .product-btn {
+                font-size: 0.85em;
+                padding: 12px 6px;
+                min-height: 60px;
+            }
+            
+            .option-btn {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>FİYATLA</h1>
+                <p>Hızlı Fiyat Teklifi Alın</p>
+            </div>
+            <button class="home-btn" onclick="restartApp()">Ana Sayfa</button>
+        </div>
+
+        <!-- Ürün Seçim Ekranı -->
+        <div class="screen active" id="screen-product">
+            <div class="screen-content">
+                <div class="main-screen-content">
+                    <h2>Ürün Seçin</h2>
+                    <div class="product-grid">
+                        <button class="product-btn" data-product="MUTFAK DOLABI">Mutfak Dolabı</button>
+                        <button class="product-btn" data-product="GARDROP">Gardırop</button>
+                        <button class="product-btn" data-product="ŞİFONYER">Şifonyer</button>
+                        <button class="product-btn" data-product="TV ÜNİTESİ">TV Ünitesi</button>
+                        <button class="product-btn" data-product="PORTMANTO">Portmanto</button>
+                        <button class="product-btn" data-product="BANYO DOLABI">Banyo Dolabı</button>
+                        <button class="product-btn" data-product="KAHVE KÖŞESİ">Kahve Köşesi</button>
+                        <button class="product-btn" data-product="ODA KAPILARI">Oda Kapıları</button>
+                        <button class="product-btn" data-product="DUVAR PANELİ">Duvar Paneli</button>
+                        <button class="product-btn" data-product="DİĞERLERİ">Diğerleri</button>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" disabled>Geri</button>
+                <button class="nav-btn next-btn" id="next-product" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- ÖLÇÜ EKRANI -->
+        <div class="screen" id="screen-dimensions">
+            <div class="screen-content">
+                <h2>Ürün ölçülerini girin</h2>
+                
+                <div class="section-title">Genişlik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-width">
+                </div>
+
+                <div class="section-title">Yükseklik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-height">
+                </div>
+
+                <div class="section-title">Derinlik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-depth">
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-product')">Geri</button>
+                <button class="nav-btn next-btn" id="next-dimensions" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- MUTFAK DOLABI EK ÜRÜNLER -->
+        <div class="screen" id="screen-kitchen-appliances">
+            <div class="screen-content">
+                <h2>Mutfak dolap alanındaki ürünleri işaretleyin</h2>
+                <div class="option-grid">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="appliance-fridge" data-appliance="BUZDOLABI">
+                        <label for="appliance-fridge">Buzdolabı</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="appliance-washer" data-appliance="ÇAMAŞIR MAKİNASI">
+                        <label for="appliance-washer">Çamaşır Makinası</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="appliance-oven" data-appliance="FIRIN">
+                        <label for="appliance-oven">Fırın</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="appliance-dishwasher" data-appliance="BULAŞIK MAKİNASI">
+                        <label for="appliance-dishwasher">Bulaşık Makinası</label>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-dimensions')">Geri</button>
+                <button class="nav-btn next-btn" id="next-kitchen-appliances">Devam</button>
+            </div>
+        </div>
+
+        <!-- GÖVDE MALZEMESİ -->
+        <div class="screen" id="screen-body">
+            <div class="screen-content">
+                <h2>Gövde malzemesini seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-body="HAM MDF">HAM MDF</button>
+                    <button class="option-btn" data-body="MDF LAM">MDF LAM</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" id="back-body">Geri</button>
+                <button class="nav-btn next-btn" id="next-body" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- YÜZEY DOKUSU -->
+        <div class="screen" id="screen-texture">
+            <div class="screen-content">
+                <h2>Yüzey dokusunu seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-texture="MAT">MAT</button>
+                    <button class="option-btn" data-texture="PARLAK">PARLAK</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-body')">Geri</button>
+                <button class="nav-btn next-btn" id="next-texture" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- GÖVDE YÜZEY DESENİ -->
+        <div class="screen" id="screen-cover-type">
+            <div class="screen-content">
+                <h2>Gövde yüzey desenini seçin</h2>
+                <div id="cover-type-options" class="option-grid"></div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-texture')">Geri</button>
+                <button class="nav-btn next-btn" id="next-cover-type" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- MOBİLYA KAPAK SAYISI -->
+        <div class="screen" id="screen-mobilya-covers">
+            <div class="screen-content">
+                <h2>Mobilya kapak sayısını girin</h2>
+                <input type="number" class="number-input" placeholder="Mobilya kapak sayısı" id="input-mobilya-covers" min="0">
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-cover-type')">Geri</button>
+                <button class="nav-btn next-btn" id="next-mobilya-covers" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- KAPAK MALZEMESİ -->
+        <div class="screen" id="screen-covers">
+            <div class="screen-content">
+                <h2>Kapak malzemesini seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-cover="HAM MDF">HAM MDF</button>
+                    <button class="option-btn" data-cover="MDF LAM">MDF LAM</button>
+                    <button class="option-btn" data-cover="AKRİLİK">AKRİLİK</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-mobilya-covers')">Geri</button>
+                <button class="nav-btn next-btn" id="next-covers" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- KAPAK YÜZEY DOKUSU -->
+        <div class="screen" id="screen-cover-texture">
+            <div class="screen-content">
+                <h2>Kapak yüzey dokusunu seçin</h2>
+                <div id="cover-texture-options" class="option-grid"></div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-covers')">Geri</button>
+                <button class="nav-btn next-btn" id="next-cover-texture" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- KAPAK YÜZEY DESENİ -->
+        <div class="screen" id="screen-cover-type2">
+            <div class="screen-content">
+                <h2>Kapak yüzey desenini seçin</h2>
+                <div id="cover-type2-options" class="option-grid"></div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-cover-texture')">Geri</button>
+                <button class="nav-btn next-btn" id="next-cover-type2" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- ALÜMİNYUM KAPAK SAYISI -->
+        <div class="screen" id="screen-aluminum-count">
+            <div class="screen-content">
+                <h2>Sadece alüminyum çerçeve kapak sayısını girin</h2>
+                <input type="number" class="number-input" placeholder="Alüminyum kapak sayısı" id="input-aluminum-count" min="0">
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" id="back-aluminum-count">Geri</button>
+                <button class="nav-btn next-btn" id="next-aluminum-count" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- ALÜMİNYUM RENK -->
+        <div class="screen" id="screen-aluminum-color">
+            <div class="screen-content">
+                <h2>Alüminyum renk seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-color="SİYAH">SİYAH</button>
+                    <button class="option-btn" data-color="ELOKSAL">ELOKSAL</button>
+                    <button class="option-btn" data-color="PARLAK KROM">PARLAK KROM</button>
+                    <button class="option-btn" data-color="SATİNE">SATİNE</button>
+                    <button class="option-btn" data-color="SARI GOLD">SARI GOLD</button>
+                    <button class="option-btn" data-color="ANTİK SARI">ANTİK SARI</button>
+                    <button class="option-btn" data-color="ROSE GOLD">ROSE GOLD</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-aluminum-count')">Geri</button>
+                <button class="nav-btn next-btn" id="next-aluminum-color" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- ALÜMİNYUM DESEN -->
+        <div class="screen" id="screen-aluminum-pattern">
+            <div class="screen-content">
+                <h2>Alüminyum desen seçin</h2>
+                <div id="aluminum-pattern-options" class="option-grid"></div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-aluminum-color')">Geri</button>
+                <button class="nav-btn next-btn" id="next-aluminum-pattern" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- KAPAK UYARI EKRANI -->
+        <div class="screen" id="screen-covers-warning">
+            <div class="warning-screen">
+                <div class="warning-icon">⚠️</div>
+                <h2>Kapak Sayısı Uyarısı</h2>
+                <div class="warning-text">
+                    <strong>Mobilya veya alüminyum kapak sayısı girmediniz.</strong><br><br>
+                    Bu şekilde devam etmek istiyor musunuz?
+                </div>
+                <div class="alert-buttons">
+                    <button class="alert-btn alert-cancel" onclick="goBackToCovers()">Geri Dön & Düzelt</button>
+                    <button class="alert-btn alert-confirm" onclick="continueWithoutCovers()">Evet, Devam Et</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAYILAR -->
+        <div class="screen" id="screen-counts">
+            <div class="screen-content">
+                <h2>Çekmece ve raf sayılarını girin</h2>
+                
+                <div class="section-title">Çekmece Sayısı</div>
+                <input type="number" class="number-input" placeholder="Çekmece sayısı" id="input-drawers" min="0">
+                
+                <div class="section-title">Toplam Raf Sayısı</div>
+                <input type="number" class="number-input" placeholder="Raf sayısı" id="input-shelves-count" min="0">
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="previousScreenFromCounts()">Geri</button>
+                <button class="nav-btn next-btn" id="next-counts">Devam</button>
+            </div>
+        </div>
+
+        <!-- AKSESUARLAR -->
+        <div class="screen" id="screen-accessories">
+            <div class="screen-content">
+                <h2>Aksesuar seçenekleri</h2>
+                
+                <div class="section-title">Çekmece Sistemleri</div>
+                <div class="option-grid">
+                    <button class="option-btn" data-drawer-system="SAMET">SAMET</button>
+                    <button class="option-btn" data-drawer-system="BLUM">BLUM</button>
+                    <button class="option-btn" data-drawer-system="HAFELE">HAFELE</button>
+                    <button class="option-btn" data-drawer-system="HETTICH">HETTICH</button>
+                </div>
+
+                <div class="section-title">Çekmece Tipi</div>
+                <div class="option-grid">
+                    <button class="option-btn" data-drawer-type="TELESKOPİK">TELESKOPİK</button>
+                    <button class="option-btn" data-drawer-type="MANDALLI">MANDALLI</button>
+                    <button class="option-btn" data-drawer-type="BASAÇ">BASAÇ</button>
+                </div>
+
+                <div class="section-title">Aydınlatma</div>
+                <div class="option-grid">
+                    <button class="option-btn" data-lighting="LED AYDINLATMA">LED AYDINLATMA</button>
+                    <button class="option-btn" data-lighting="AYDINLATMA YOK">AYDINLATMA YOK</button>
+                </div>
+
+                <div class="section-title">Cam Alanlar</div>
+                <div class="option-grid">
+                    <button class="option-btn" data-glass="RAF ALANLARI">RAF ALANLARI</button>
+                    <button class="option-btn" data-glass="CAM YOK">CAM YOK</button>
+                </div>
+
+                <div id="glass-thickness-container" style="display: none;">
+                    <div class="section-title">Cam Kalınlığı</div>
+                    <div class="option-grid" id="glass-thickness-options">
+                        <button class="option-btn" data-glass-thickness="4 MM">4 MM</button>
+                        <button class="option-btn" data-glass-thickness="6 MM">6 MM</button>
+                        <button class="option-btn" data-glass-thickness="8 MM">8 MM</button>
+                        <button class="option-btn" data-glass-thickness="10 MM">10 MM</button>
+                    </div>
+                    <div id="glass-surface-container" style="display: none;">
+                        <div class="section-title">Cam Yüzeyi</div>
+                        <div class="option-grid" id="glass-surface-options">
+                            <button class="option-btn" data-glass-surface="DÜZ">DÜZ</button>
+                            <button class="option-btn" data-glass-surface="SİYAH">SİYAH</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Aynalar</div>
+                <div class="option-grid">
+                    <button class="option-btn" data-mirror="AYNA YOK">AYNA YOK</button>
+                    <button class="option-btn" data-mirror="KAPAK ÜZERİNE AYNA">KAPAK ÜZERİNE AYNA</button>
+                </div>
+
+                <div id="mirror-type-container" style="display: none;">
+                    <div class="section-title">Ayna Tipi</div>
+                    <div class="option-grid" id="mirror-type-options">
+                        <button class="option-btn" data-mirror-type="FÜME">FÜME</button>
+                        <button class="option-btn" data-mirror-type="BRONZ">BRONZ</button>
+                        <button class="option-btn" data-mirror-type="ANTİK SARI">ANTİK SARI</button>
+                        <button class="option-btn" data-mirror-type="GÜMÜŞ FLOTAL">GÜMÜŞ FLOTAL</button>
+                    </div>
+                </div>
+
+                <div class="section-title">Kumaş Türleri</div>
+                <div class="option-grid">
+                    <button class="option-btn" data-fabric="KUMAŞ YOK">KUMAŞ YOK</button>
+                    <button class="option-btn" data-fabric="KADİFE">KADİFE</button>
+                    <button class="option-btn" data-fabric="KETEN">KETEN</button>
+                    <button class="option-btn" data-fabric="NUBUK">NUBUK</button>
+                    <button class="option-btn" data-fabric="DERİ">DERİ</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-counts')">Geri</button>
+                <button class="nav-btn next-btn" id="next-accessories">Devam</button>
+            </div>
+        </div>
+
+        <!-- DİĞER BİLGİLER -->
+        <div class="screen" id="screen-other-info">
+            <div class="screen-content">
+                <div class="input-group">
+                    <label class="input-label">Özel Notlar</label>
+                    <textarea class="text-input" placeholder="Eklemek istediğiniz özel notlar, detaylar, istekler..." id="input-notes" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="goBackFromOtherInfo()">Geri</button>
+                <button class="nav-btn next-btn" id="next-other-info">Devam</button>
+            </div>
+        </div>
+
+        <!-- KİŞİSEL BİLGİLER -->
+        <div class="screen" id="screen-personal">
+            <div class="screen-content">
+                <h2>İletişim bilgilerinizi girin</h2>
+                
+                <div class="input-group">
+                    <label class="input-label">Ad Soyad</label>
+                    <input type="text" class="text-input" placeholder="Adınız ve soyadınız" id="input-name">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Telefon Numarası</label>
+                    <input type="tel" class="text-input" placeholder="Telefon numaranız" id="input-phone">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Adres</label>
+                    <textarea class="text-input" placeholder="Teslimat adresiniz" id="input-address" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-other-info')">Geri</button>
+                <button class="nav-btn next-btn" id="next-personal">WhatsApp'tan Fiyat İste</button>
+            </div>
+        </div>
+
+        <!-- WHATSAPP ÖNCESİ UYARI -->
+        <div class="screen" id="screen-warning">
+            <div class="warning-screen">
+                <div class="warning-icon">📸</div>
+                <h2>Fotoğraf Hatırlatması</h2>
+                <div class="warning-text">
+                    <strong>Uygulama alanına ait referans niteliğinde fotoğraf göndermeyi unutmayın</strong>
+                </div>
+                <div class="countdown" id="countdown">5</div>
+                <p style="color: rgba(245, 240, 232, 0.7); margin-top: 10px;">WhatsApp'a yönlendiriliyorsunuz...</p>
+            </div>
+        </div>
+
+        <!-- WHATSAPP -->
+        <div class="screen" id="screen-whatsapp">
+            <div class="screen-content">
+                <h2>Fiyat talebiniz hazır</h2>
+                
+                <div class="photo-reminder">
+                    <strong>ÖNEMLİ HATIRLATMA</strong>
+                    Uygulama alanına ait referans niteliğinde fotoğraf göndermeyi unutmayın!
+                </div>
+
+                <div class="price-range">
+                    <h3>TAHMİNİ FİYAT ARALIĞI</h3>
+                    <div class="price-amount" id="price-range-display">139.861 TL - 154.584 TL</div>
+                </div>
+
+                <div class="premium-note">
+                    BU YALNIZCA ÖN FİYATLANDIRMA. DETAYLI PROJELENDİRME İÇİN MİMARIMIZ EN KISA SÜREDE GERİ DÖNÜŞ SAĞLAYACAKTIR.
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 15px; margin: 20px 0; border: 1px solid var(--rr-border);">
+                    <div id="summary-content"></div>
+                </div>
+                
+                <div class="ai-footer">
+                    SİZE ÖZEL BU TALEP, PLATFORM AKILLI FİYATLANDIRMA SİSTEM TEKNOLOJİSİYLE OTOMATİK OLARAK HAZIRLANDI
+                </div>
+                
+                <button class="whatsapp-btn" onclick="sendToWhatsApp()">WhatsApp'tan Gönder</button>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-personal')">Geri</button>
+                <button class="nav-btn next-btn" onclick="restartApp()">Yeni Talep</button>
+            </div>
+        </div>
+
+        <!-- ODA KAPILARI EKRANLARI -->
+        <div class="screen" id="screen-door-dimensions">
+            <div class="screen-content">
+                <h2>Kapı ölçülerini girin</h2>
+                <div class="section-title">Genişlik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-door-width">
+                </div>
+                <div class="section-title">Yükseklik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-door-height">
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-product')">Geri</button>
+                <button class="nav-btn next-btn" id="next-door-dimensions" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-door-type">
+            <div class="screen-content">
+                <h2>Kapı tipini seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-door-type="ÇITALI KAPI">Çıtalı Kapı</button>
+                    <button class="option-btn" data-door-type="DÜZ KAPI">Düz Kapı</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-door-dimensions')">Geri</button>
+                <button class="nav-btn next-btn" id="next-door-type" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-door-glass">
+            <div class="screen-content">
+                <h2>Cam durumunu seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-door-glass="CAMLI">Camlı</button>
+                    <button class="option-btn" data-door-glass="CAMSIZ">Camsız</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-door-type')">Geri</button>
+                <button class="nav-btn next-btn" id="next-door-glass" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-door-trim">
+            <div class="screen-content">
+                <h2>Pervaz seçimi</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-door-trim="STANDART PERVAZ">Standart Pervaz</button>
+                    <button class="option-btn" data-door-trim="DESENLİ PERVAZ">Desenli Pervaz</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-door-glass')">Geri</button>
+                <button class="nav-btn next-btn" id="next-door-trim" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-door-count">
+            <div class="screen-content">
+                <h2>Kapı adedini girin</h2>
+                <input type="number" class="number-input" placeholder="Kapı adedi" id="input-door-count" min="1">
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-door-trim')">Geri</button>
+                <button class="nav-btn next-btn" id="next-door-count" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- DUVAR PANELİ EKRANLARI -->
+        <div class="screen" id="screen-panel-dimensions">
+            <div class="screen-content">
+                <h2>Panel ölçülerini girin</h2>
+                <div class="section-title">Genişlik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-panel-width">
+                </div>
+                <div class="section-title">Yükseklik</div>
+                <div class="dimension-unit">
+                    <input type="number" class="dimension-input" placeholder="0" id="input-panel-height">
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-product')">Geri</button>
+                <button class="nav-btn next-btn" id="next-panel-dimensions" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-panel-body">
+            <div class="screen-content">
+                <h2>Gövde malzemesini seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-panel-body="HAM MDF">HAM MDF</button>
+                    <button class="option-btn" data-panel-body="MDF LAM">MDF LAM</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-panel-dimensions')">Geri</button>
+                <button class="nav-btn next-btn" id="next-panel-body" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-panel-texture">
+            <div class="screen-content">
+                <h2>Yüzey dokusunu seçin</h2>
+                <div class="option-grid">
+                    <button class="option-btn" data-panel-texture="MAT">MAT</button>
+                    <button class="option-btn" data-panel-texture="PARLAK">PARLAK</button>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-panel-body')">Geri</button>
+                <button class="nav-btn next-btn" id="next-panel-texture" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-panel-cover-type">
+            <div class="screen-content">
+                <h2>Yüzey desenini seçin</h2>
+                <div id="panel-cover-type-options" class="option-grid"></div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-panel-texture')">Geri</button>
+                <button class="nav-btn next-btn" id="next-panel-cover-type" disabled>Devam</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-panel-count">
+            <div class="screen-content">
+                <h2>Panel adedini girin</h2>
+                <input type="number" class="number-input" placeholder="Panel adedi" id="input-panel-count" min="1">
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-panel-cover-type')">Geri</button>
+                <button class="nav-btn next-btn" id="next-panel-count" disabled>Devam</button>
+            </div>
+        </div>
+
+        <!-- DİĞERLERİ EKRANI -->
+        <div class="screen" id="screen-other-category">
+            <div class="screen-content">
+                <h2>Özel Notlar</h2>
+                <p style="color: rgba(245, 240, 232, 0.7); margin-bottom: 20px;">Yaptırmak istediğiniz ürünü detaylı şekilde açıklayın</p>
+                <div class="input-group">
+                    <label class="input-label">Ürün Açıklaması</label>
+                    <textarea class="text-input" placeholder="Ürünün ne olduğunu, ne amaçla kullanılacağını, özelliklerini detaylı şekilde yazın..." id="input-other-desc" rows="6"></textarea>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-btn back-btn" onclick="showScreen('screen-product')">Geri</button>
+                <button class="nav-btn next-btn" id="next-other-category" disabled>Devam</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============== FİYAT LİSTESİ ===============
+        const priceList = {
+            body: {
+                'HAM MDF': 15000,
+                'MDF LAM': 12000
+            },
+            cover: {
+                'HAM MDF': 15000,
+                'MDF LAM': 12000,
+                'AKRİLİK': 13500
+            },
+            aluminum: {
+                base: 7500,
+                extraColor: 500
+            },
+            accessories: {
+                drawerSystems: {
+                    'SAMET': 1200,
+                    'BLUM': 2500,
+                    'HAFELE': 1800,
+                    'HETTICH': 2200
+                },
+                lighting: {
+                    'LED AYDINLATMA': 1500
+                },
+                glass: {
+                    '4 MM': 800,
+                    '6 MM': 1200,
+                    '8 MM': 1600,
+                    '10 MM': 2000
+                },
+                basic: {
+                    'drawer': 400,
+                    'shelf': 300
+                }
+            },
+            installation: 0.15
+        };
+
+        const mevcutUrunSecenekleri = {
+            gövde: {
+                'HAM MDF': {
+                    'MAT': ['DÜZ LAKE', 'CNC İŞLEMELİ LAKE'],
+                    'PARLAK': ['DÜZ LAKE', 'CNC İŞLEMELİ LAKE']
+                },
+                'MDF LAM': {
+                    'MAT': ['MDF LAM', 'LAK PANEL'],
+                    'PARLAK': ['MDF LAM']
+                }
+            },
+            kapaklar: {
+                'HAM MDF': {
+                    'MAT': ['DÜZ LAKE', 'KLAPALI LAKE', 'CNC İŞLEMELİ LAKE'],
+                    'PARLAK': ['DÜZ LAKE', 'KLAPALI LAKE', 'CNC İŞLEMELİ LAKE']
+                },
+                'MDF LAM': {
+                    'MAT': ['MDF LAM', 'LAK PANEL'],
+                    'PARLAK': ['MDF LAM']
+                },
+                'AKRİLİK': {
+                    'PARLAK': ['AKRİLİK']
+                }
+            },
+            alüminyum: {
+                'SİYAH': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI'],
+                'ELOKSAL': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI'],
+                'PARLAK KROM': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI'],
+                'SATİNE': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI'],
+                'SARI GOLD': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI'],
+                'ANTİK SARI': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI'],
+                'ROSE GOLD': ['DÜZ', 'SATİNE', 'REFLEKTE', 'FÜME', 'NERVÜRLÜ', 'BRONZ', 'SİYAH BOYALI']
+            }
+        };
+
+        const mevcutUrunler = [
+            'MUTFAK DOLABI', 'GARDROP', 'ŞİFONYER', 'TV ÜNİTESİ', 
+            'PORTMANTO', 'BANYO DOLABI', 'KAHVE KÖŞESİ'
+        ];
+
+        let userSelection = {
+            product: '',
+            dimensions: { width: '', height: '', depth: '' },
+            body: '', texture: '', coverType: '',
+            mobilyaCovers: '', cover: '', coverTexture: '', coverType2: '',
+            aluminumCount: '', aluminumColor: '', aluminumPattern: '',
+            drawers: '', shelvesCount: '',
+            drawerSystem: '', drawerType: '',
+            lighting: '', glass: '', glassThickness: '', glassSurface: '',
+            mirror: '', mirrorType: '', fabric: '',
+            kitchenAppliances: [],
+            notes: '', name: '', phone: '', address: '',
+            doorWidth: '', doorHeight: '', doorType: '', doorGlass: '', doorTrim: '', doorCount: '',
+            panelWidth: '', panelHeight: '', panelBody: '', panelTexture: '', panelCoverType: '', panelCount: '',
+            otherDescription: ''
+        };
+
+        let countdownInterval;
+        let currentFlow = [];
+
+        function calculatePrice() {
+            let totalPrice = 0;
+            
+            if (mevcutUrunler.includes(userSelection.product)) {
+                if (userSelection.body && userSelection.dimensions.width && userSelection.dimensions.height) {
+                    const width = parseFloat(userSelection.dimensions.width) / 100;
+                    const height = parseFloat(userSelection.dimensions.height) / 100;
+                    const frontArea = width * height;
+                    totalPrice += frontArea * priceList.body[userSelection.body];
+                }
+                
+                if (userSelection.cover && userSelection.mobilyaCovers) {
+                    const coverCount = parseInt(userSelection.mobilyaCovers) || 0;
+                    const coverArea = coverCount * 0.5;
+                    totalPrice += coverArea * priceList.cover[userSelection.cover];
+                }
+                
+                if (userSelection.aluminumCount) {
+                    const aluminumCount = parseInt(userSelection.aluminumCount) || 0;
+                    const aluminumArea = aluminumCount * 0.5;
+                    totalPrice += aluminumArea * priceList.aluminum.base;
+                    
+                    if (userSelection.aluminumColor && userSelection.aluminumColor !== 'SİYAH') {
+                        totalPrice += aluminumCount * priceList.aluminum.extraColor;
+                    }
+                }
+                
+                if (userSelection.drawerSystem && userSelection.drawers) {
+                    const drawerCount = parseInt(userSelection.drawers) || 0;
+                    totalPrice += drawerCount * priceList.accessories.drawerSystems[userSelection.drawerSystem];
+                }
+                
+                if (userSelection.drawers) {
+                    const drawerCount = parseInt(userSelection.drawers) || 0;
+                    totalPrice += drawerCount * priceList.accessories.basic.drawer;
+                }
+                
+                if (userSelection.shelvesCount) {
+                    const shelfCount = parseInt(userSelection.shelvesCount) || 0;
+                    totalPrice += shelfCount * priceList.accessories.basic.shelf;
+                }
+                
+                if (userSelection.lighting === 'LED AYDINLATMA') {
+                    totalPrice += priceList.accessories.lighting['LED AYDINLATMA'];
+                }
+                
+                if (userSelection.glass === 'RAF ALANLARI' && userSelection.glassThickness) {
+                    const glassArea = 1.0;
+                    totalPrice += glassArea * priceList.accessories.glass[userSelection.glassThickness];
+                }
+            }
+            
+            totalPrice += totalPrice * priceList.installation;
+            return Math.round(totalPrice);
+        }
+
+        function calculatePriceRange() {
+            const basePrice = calculatePrice();
+            const lowerRange = Math.round(basePrice * 0.95);
+            const upperRange = Math.round(basePrice * 1.05);
+            
+            return {
+                lower: lowerRange,
+                upper: upperRange,
+                display: `${formatPrice(lowerRange)} TL - ${formatPrice(upperRange)} TL`
+            };
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('tr-TR').format(price);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'screen-cover-type') {
+                loadCoverTypeOptions();
+            } else if (screenId === 'screen-cover-texture') {
+                loadCoverTextureOptions();
+            } else if (screenId === 'screen-cover-type2') {
+                loadCoverType2Options();
+            } else if (screenId === 'screen-aluminum-pattern') {
+                loadAluminumPatternOptions();
+            } else if (screenId === 'screen-panel-cover-type') {
+                loadPanelCoverTypeOptions();
+            } else if (screenId === 'screen-warning') {
+                startCountdown();
+            } else if (screenId === 'screen-whatsapp') {
+                updatePriceDisplay();
+            }
+        }
+
+        function updatePriceDisplay() {
+            const priceRange = calculatePriceRange();
+            document.getElementById('price-range-display').textContent = priceRange.display;
+        }
+
+        function setupProductFlow() {
+            currentFlow = [];
+            
+            if (mevcutUrunler.includes(userSelection.product)) {
+                if (userSelection.product === 'MUTFAK DOLABI') {
+                    currentFlow = [
+                        'screen-dimensions', 'screen-kitchen-appliances', 'screen-body', 'screen-texture', 'screen-cover-type',
+                        'screen-mobilya-covers', 'screen-covers', 'screen-cover-texture', 'screen-cover-type2',
+                        'screen-aluminum-count', 'screen-aluminum-color', 'screen-aluminum-pattern', 'screen-counts',
+                        'screen-accessories', 'screen-other-info', 'screen-personal'
+                    ];
+                } else {
+                    currentFlow = [
+                        'screen-dimensions', 'screen-body', 'screen-texture', 'screen-cover-type',
+                        'screen-mobilya-covers', 'screen-covers', 'screen-cover-texture', 'screen-cover-type2',
+                        'screen-aluminum-count', 'screen-aluminum-color', 'screen-aluminum-pattern', 'screen-counts',
+                        'screen-accessories', 'screen-other-info', 'screen-personal'
+                    ];
+                }
+            } else if (userSelection.product === 'ODA KAPILARI') {
+                currentFlow = [
+                    'screen-door-dimensions', 'screen-door-type', 'screen-door-glass',
+                    'screen-door-trim', 'screen-door-count', 'screen-other-info', 'screen-personal'
+                ];
+            } else if (userSelection.product === 'DUVAR PANELİ') {
+                currentFlow = [
+                    'screen-panel-dimensions', 'screen-panel-body', 'screen-panel-texture',
+                    'screen-panel-cover-type', 'screen-panel-count', 'screen-other-info', 'screen-personal'
+                ];
+            } else if (userSelection.product === 'DİĞERLERİ') {
+                currentFlow = [
+                    'screen-other-category', 'screen-other-info', 'screen-personal'
+                ];
+            }
+        }
+
+        function loadCoverTypeOptions() {
+            const optionsContainer = document.getElementById('cover-type-options');
+            optionsContainer.innerHTML = '';
+
+            if (mevcutUrunler.includes(userSelection.product) && userSelection.body && userSelection.texture) {
+                const options = mevcutUrunSecenekleri.gövde[userSelection.body][userSelection.texture];
+                
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = option;
+                    button.dataset.covertype = option;
+                    button.onclick = function() {
+                        document.querySelectorAll('#cover-type-options .option-btn').forEach(btn => btn.classList.remove('selected'));
+                        this.classList.add('selected');
+                        userSelection.coverType = this.dataset.covertype;
+                        document.getElementById('next-cover-type').disabled = false;
+                    };
+                    optionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        function loadCoverTextureOptions() {
+            const optionsContainer = document.getElementById('cover-texture-options');
+            optionsContainer.innerHTML = '';
+
+            if (mevcutUrunler.includes(userSelection.product) && userSelection.cover) {
+                const textures = mevcutUrunSecenekleri.kapaklar[userSelection.cover];
+                const availableTextures = Object.keys(textures);
+                
+                availableTextures.forEach(texture => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = texture;
+                    button.dataset.covertexture = texture;
+                    button.onclick = function() {
+                        document.querySelectorAll('#cover-texture-options .option-btn').forEach(btn => btn.classList.remove('selected'));
+                        this.classList.add('selected');
+                        userSelection.coverTexture = this.dataset.covertexture;
+                        document.getElementById('next-cover-texture').disabled = false;
+                    };
+                    optionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        function loadCoverType2Options() {
+            const optionsContainer = document.getElementById('cover-type2-options');
+            optionsContainer.innerHTML = '';
+
+            if (mevcutUrunler.includes(userSelection.product) && userSelection.cover && userSelection.coverTexture) {
+                const options = mevcutUrunSecenekleri.kapaklar[userSelection.cover][userSelection.coverTexture];
+                
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = option;
+                    button.dataset.covertype2 = option;
+                    button.onclick = function() {
+                        document.querySelectorAll('#cover-type2-options .option-btn').forEach(btn => btn.classList.remove('selected'));
+                        this.classList.add('selected');
+                        userSelection.coverType2 = this.dataset.covertype2;
+                        document.getElementById('next-cover-type2').disabled = false;
+                    };
+                    optionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        function loadAluminumPatternOptions() {
+            const optionsContainer = document.getElementById('aluminum-pattern-options');
+            optionsContainer.innerHTML = '';
+
+            if (mevcutUrunler.includes(userSelection.product) && userSelection.aluminumColor) {
+                const patterns = mevcutUrunSecenekleri.alüminyum[userSelection.aluminumColor];
+                
+                patterns.forEach(pattern => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = pattern;
+                    button.dataset.pattern = pattern;
+                    button.onclick = function() {
+                        document.querySelectorAll('#aluminum-pattern-options .option-btn').forEach(btn => btn.classList.remove('selected'));
+                        this.classList.add('selected');
+                        userSelection.aluminumPattern = this.dataset.pattern;
+                        document.getElementById('next-aluminum-pattern').disabled = false;
+                    };
+                    optionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        function loadPanelCoverTypeOptions() {
+            const optionsContainer = document.getElementById('panel-cover-type-options');
+            optionsContainer.innerHTML = '';
+
+            if (userSelection.product === 'DUVAR PANELİ' && userSelection.panelBody && userSelection.panelTexture) {
+                const options = mevcutUrunSecenekleri.gövde[userSelection.panelBody][userSelection.panelTexture];
+                
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = option;
+                    button.dataset.panelcovertype = option;
+                    button.onclick = function() {
+                        document.querySelectorAll('#panel-cover-type-options .option-btn').forEach(btn => btn.classList.remove('selected'));
+                        this.classList.add('selected');
+                        userSelection.panelCoverType = this.dataset.panelcovertype;
+                        document.getElementById('next-panel-cover-type').disabled = false;
+                    };
+                    optionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        function toggleGlassOptions() {
+            const glassThicknessContainer = document.getElementById('glass-thickness-container');
+            const glassSurfaceContainer = document.getElementById('glass-surface-container');
+            
+            if (userSelection.glass === 'RAF ALANLARI') {
+                glassThicknessContainer.style.display = 'block';
+                if (userSelection.glassThickness) {
+                    glassSurfaceContainer.style.display = 'block';
+                } else {
+                    glassSurfaceContainer.style.display = 'none';
+                }
+            } else {
+                glassThicknessContainer.style.display = 'none';
+                glassSurfaceContainer.style.display = 'none';
+                userSelection.glassThickness = '';
+                userSelection.glassSurface = '';
+            }
+        }
+
+        function toggleMirrorOptions() {
+            const mirrorTypeContainer = document.getElementById('mirror-type-container');
+            
+            if (userSelection.mirror === 'KAPAK ÜZERİNE AYNA') {
+                mirrorTypeContainer.style.display = 'block';
+            } else {
+                mirrorTypeContainer.style.display = 'none';
+                userSelection.mirrorType = '';
+            }
+        }
+
+        function checkCoversAndContinue() {
+            const mobilyaCovers = parseInt(userSelection.mobilyaCovers) || 0;
+            const aluminumCount = parseInt(userSelection.aluminumCount) || 0;
+            
+            if (mobilyaCovers === 0 && aluminumCount === 0) {
+                showScreen('screen-covers-warning');
+            } else {
+                showScreen('screen-counts');
+            }
+        }
+
+        function goBackToCovers() {
+            showScreen('screen-mobilya-covers');
+        }
+
+        function continueWithoutCovers() {
+            showScreen('screen-counts');
+        }
+
+        function previousScreenFromCounts() {
+            const aluminumCount = parseInt(userSelection.aluminumCount) || 0;
+            
+            if (aluminumCount > 0) {
+                showScreen('screen-aluminum-pattern');
+            } else {
+                const mobilyaCovers = parseInt(userSelection.mobilyaCovers) || 0;
+                if (mobilyaCovers > 0) {
+                    showScreen('screen-cover-type2');
+                } else {
+                    showScreen('screen-aluminum-count');
+                }
+            }
+        }
+
+        function startCountdown() {
+            let count = 5;
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.textContent = count;
+            
+            countdownInterval = setInterval(() => {
+                count--;
+                countdownElement.textContent = count;
+                
+                if (count <= 0) {
+                    clearInterval(countdownInterval);
+                    showScreen('screen-whatsapp');
+                }
+            }, 1000);
+        }
+
+        function goBackFromOtherInfo() {
+            if (userSelection.product === 'ODA KAPILARI') {
+                showScreen('screen-door-count');
+            } else if (userSelection.product === 'DUVAR PANELİ') {
+                showScreen('screen-panel-count');
+            } else if (userSelection.product === 'DİĞERLERİ') {
+                showScreen('screen-other-category');
+            } else {
+                showScreen('screen-accessories');
+            }
+        }
+
+        function prepareSummary() {
+            userSelection.name = document.getElementById('input-name').value;
+            userSelection.phone = document.getElementById('input-phone').value;
+            userSelection.address = document.getElementById('input-address').value;
+            userSelection.notes = document.getElementById('input-notes').value;
+            
+            showScreen('screen-warning');
+            
+            setTimeout(() => {
+                const summaryContent = document.getElementById('summary-content');
+                let html = '';
+                
+                html += `<div class="summary-item"><strong>Ürün:</strong> ${userSelection.product}</div>`;
+                
+                if (mevcutUrunler.includes(userSelection.product)) {
+                    html += `<div class="summary-item"><strong>Ölçüler:</strong> ${userSelection.dimensions.width}x${userSelection.dimensions.height}x${userSelection.dimensions.depth} cm</div>`;
+                    
+                    if (userSelection.product === 'MUTFAK DOLABI' && userSelection.kitchenAppliances.length > 0) {
+                        html += `<div class="summary-item"><strong>Mutfak Cihazları:</strong> ${userSelection.kitchenAppliances.join(', ')}</div>`;
+                    }
+                    
+                    if (userSelection.body) {
+                        html += `<div class="summary-item"><strong>Gövde Malzemesi:</strong> ${userSelection.body}</div>`;
+                        html += `<div class="summary-item"><strong>Yüzey Dokusu:</strong> ${userSelection.texture}</div>`;
+                        if (userSelection.coverType) {
+                            html += `<div class="summary-item"><strong>Gövde Yüzey Deseni:</strong> ${userSelection.coverType}</div>`;
+                        }
+                    }
+                    
+                    const mobilyaCovers = parseInt(userSelection.mobilyaCovers) || 0;
+                    if (mobilyaCovers > 0) {
+                        html += `<div class="summary-item"><strong>Mobilya Kapak:</strong> ${mobilyaCovers} adet</div>`;
+                        if (userSelection.cover) {
+                            html += `<div class="summary-item"><strong>Kapak Malzemesi:</strong> ${userSelection.cover}</div>`;
+                        }
+                        if (userSelection.coverTexture) {
+                            html += `<div class="summary-item"><strong>Yüzey Dokusu:</strong> ${userSelection.coverTexture}</div>`;
+                        }
+                        if (userSelection.coverType2) {
+                            html += `<div class="summary-item"><strong>Kapak Yüzey Deseni:</strong> ${userSelection.coverType2}</div>`;
+                        }
+                    }
+                    
+                    const aluminumCount = parseInt(userSelection.aluminumCount) || 0;
+                    if (aluminumCount > 0) {
+                        html += `<div class="summary-item"><strong>Alüminyum Kapak:</strong> ${aluminumCount} adet</div>`;
+                        if (userSelection.aluminumColor) {
+                            html += `<div class="summary-item"><strong>Alüminyum Renk:</strong> ${userSelection.aluminumColor}</div>`;
+                        }
+                        if (userSelection.aluminumPattern) {
+                            html += `<div class="summary-item"><strong>Alüminyum Desen:</strong> ${userSelection.aluminumPattern}</div>`;
+                        }
+                    }
+                    
+                    const totalCovers = mobilyaCovers + aluminumCount;
+                    html += `<div class="summary-item"><strong>Toplam Kapak:</strong> ${totalCovers} adet</div>`;
+                    
+                    if (userSelection.drawers || userSelection.shelvesCount) {
+                        html += `<div class="summary-item"><strong>Çekmece Sayısı:</strong> ${userSelection.drawers || '0'}</div>`;
+                        html += `<div class="summary-item"><strong>Raf Sayısı:</strong> ${userSelection.shelvesCount || '0'}</div>`;
+                    }
+                    
+                    if (userSelection.drawerSystem) {
+                        html += `<div class="summary-item"><strong>Çekmece Sistemi:</strong> ${userSelection.drawerSystem}</div>`;
+                    }
+                    if (userSelection.drawerType) {
+                        html += `<div class="summary-item"><strong>Çekmece Tipi:</strong> ${userSelection.drawerType}</div>`;
+                    }
+                    if (userSelection.lighting) {
+                        html += `<div class="summary-item"><strong>Aydınlatma:</strong> ${userSelection.lighting}</div>`;
+                    }
+                    if (userSelection.glass) {
+                        html += `<div class="summary-item"><strong>Cam:</strong> ${userSelection.glass}</div>`;
+                    }
+                    if (userSelection.glassThickness) {
+                        html += `<div class="summary-item"><strong>Cam Kalınlığı:</strong> ${userSelection.glassThickness}</div>`;
+                    }
+                    if (userSelection.glassSurface) {
+                        html += `<div class="summary-item"><strong>Cam Yüzeyi:</strong> ${userSelection.glassSurface}</div>`;
+                    }
+                    if (userSelection.mirror) {
+                        html += `<div class="summary-item"><strong>Ayna:</strong> ${userSelection.mirror}</div>`;
+                    }
+                    if (userSelection.mirrorType) {
+                        html += `<div class="summary-item"><strong>Ayna Tipi:</strong> ${userSelection.mirrorType}</div>`;
+                    }
+                    if (userSelection.fabric) {
+                        html += `<div class="summary-item"><strong>Kumaş:</strong> ${userSelection.fabric}</div>`;
+                    }
+                } else if (userSelection.product === 'ODA KAPILARI') {
+                    html += `<div class="summary-item"><strong>Kapı Ölçüleri:</strong> ${userSelection.doorWidth}x${userSelection.doorHeight} cm</div>`;
+                    html += `<div class="summary-item"><strong>Kapı Tipi:</strong> ${userSelection.doorType}</div>`;
+                    html += `<div class="summary-item"><strong>Cam Durumu:</strong> ${userSelection.doorGlass}</div>`;
+                    html += `<div class="summary-item"><strong>Pervaz:</strong> ${userSelection.doorTrim}</div>`;
+                    html += `<div class="summary-item"><strong>Kapı Adedi:</strong> ${userSelection.doorCount}</div>`;
+                } else if (userSelection.product === 'DUVAR PANELİ') {
+                    html += `<div class="summary-item"><strong>Panel Ölçüleri:</strong> ${userSelection.panelWidth}x${userSelection.panelHeight} cm</div>`;
+                    html += `<div class="summary-item"><strong>Gövde Malzemesi:</strong> ${userSelection.panelBody}</div>`;
+                    html += `<div class="summary-item"><strong>Yüzey Dokusu:</strong> ${userSelection.panelTexture}</div>`;
+                    if (userSelection.panelCoverType) {
+                        html += `<div class="summary-item"><strong>Yüzey Deseni:</strong> ${userSelection.panelCoverType}</div>`;
+                    }
+                    html += `<div class="summary-item"><strong>Panel Adedi:</strong> ${userSelection.panelCount}</div>`;
+                } else if (userSelection.product === 'DİĞERLERİ') {
+                    html += `<div class="summary-item"><strong>Açıklama:</strong> ${userSelection.otherDescription}</div>`;
+                }
+                
+                if (userSelection.notes) {
+                    html += `<div class="summary-item"><strong>Özel Notlar:</strong> ${userSelection.notes}</div>`;
+                }
+                
+                html += `<div class="summary-item"><strong>Ad Soyad:</strong> ${userSelection.name}</div>`;
+                html += `<div class="summary-item"><strong>Telefon:</strong> ${userSelection.phone}</div>`;
+                html += `<div class="summary-item"><strong>Adres:</strong> ${userSelection.address}</div>`;
+                
+                summaryContent.innerHTML = html;
+            }, 5000);
+        }
+
+        function restartApp() {
+            userSelection = {
+                product: '',
+                dimensions: { width: '', height: '', depth: '' },
+                body: '', texture: '', coverType: '',
+                mobilyaCovers: '', cover: '', coverTexture: '', coverType2: '',
+                aluminumCount: '', aluminumColor: '', aluminumPattern: '',
+                drawers: '', shelvesCount: '',
+                drawerSystem: '', drawerType: '',
+                lighting: '', glass: '', glassThickness: '', glassSurface: '',
+                mirror: '', mirrorType: '', fabric: '',
+                kitchenAppliances: [],
+                notes: '', name: '', phone: '', address: '',
+                doorWidth: '', doorHeight: '', doorType: '', doorGlass: '', doorTrim: '', doorCount: '',
+                panelWidth: '', panelHeight: '', panelBody: '', panelTexture: '', panelCoverType: '', panelCount: '',
+                otherDescription: ''
+            };
+            
+            document.querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+            
+            document.querySelectorAll('.option-btn.selected, .product-btn.selected').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.checkbox-option input').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            document.querySelectorAll('.next-btn').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            document.getElementById('glass-thickness-container').style.display = 'none';
+            document.getElementById('glass-surface-container').style.display = 'none';
+            document.getElementById('mirror-type-container').style.display = 'none';
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            showScreen('screen-product');
+        }
+
+        // =============== EVENT LISTENER'LAR ===============
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ürün seçimi
+            document.querySelectorAll('.product-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.product-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.product = this.dataset.product;
+                    setupProductFlow();
+                    document.getElementById('next-product').disabled = false;
+                    
+                    if (userSelection.product === 'DİĞERLERİ') {
+                        showScreen('screen-other-category');
+                    }
+                });
+            });
+
+            // Ölçü inputları
+            document.getElementById('input-width').addEventListener('input', function() {
+                userSelection.dimensions.width = this.value;
+                checkNextButton('next-dimensions');
+            });
+
+            document.getElementById('input-height').addEventListener('input', function() {
+                userSelection.dimensions.height = this.value;
+                checkNextButton('next-dimensions');
+            });
+
+            document.getElementById('input-depth').addEventListener('input', function() {
+                userSelection.dimensions.depth = this.value;
+                checkNextButton('next-dimensions');
+            });
+
+            // Kapı ölçüleri
+            document.getElementById('input-door-width').addEventListener('input', function() {
+                userSelection.doorWidth = this.value;
+                checkNextButton('next-door-dimensions');
+            });
+
+            document.getElementById('input-door-height').addEventListener('input', function() {
+                userSelection.doorHeight = this.value;
+                checkNextButton('next-door-dimensions');
+            });
+
+            // Panel ölçüleri
+            document.getElementById('input-panel-width').addEventListener('input', function() {
+                userSelection.panelWidth = this.value;
+                checkNextButton('next-panel-dimensions');
+            });
+
+            document.getElementById('input-panel-height').addEventListener('input', function() {
+                userSelection.panelHeight = this.value;
+                checkNextButton('next-panel-dimensions');
+            });
+
+            // Diğerleri açıklama
+            document.getElementById('input-other-desc').addEventListener('input', function() {
+                userSelection.otherDescription = this.value;
+                document.getElementById('next-other-category').disabled = !this.value;
+            });
+
+            // Kapı adedi
+            document.getElementById('input-door-count').addEventListener('input', function() {
+                userSelection.doorCount = this.value;
+                document.getElementById('next-door-count').disabled = !this.value;
+            });
+
+            // Panel adedi
+            document.getElementById('input-panel-count').addEventListener('input', function() {
+                userSelection.panelCount = this.value;
+                document.getElementById('next-panel-count').disabled = !this.value;
+            });
+
+            // MUTFAK ALETLERİ
+            document.querySelectorAll('#screen-kitchen-appliances input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const appliance = this.dataset.appliance;
+                    if (this.checked) {
+                        if (!userSelection.kitchenAppliances.includes(appliance)) {
+                            userSelection.kitchenAppliances.push(appliance);
+                        }
+                    } else {
+                        userSelection.kitchenAppliances = userSelection.kitchenAppliances.filter(item => item !== appliance);
+                    }
+                    document.getElementById('next-kitchen-appliances').disabled = false;
+                });
+            });
+
+            // DİĞER BİLGİLER
+            document.getElementById('input-notes').addEventListener('input', function() {
+                userSelection.notes = this.value;
+                document.getElementById('next-other-info').disabled = false;
+            });
+
+            // KİŞİSEL BİLGİLER
+            document.getElementById('input-name').addEventListener('input', function() {
+                userSelection.name = this.value;
+                document.getElementById('next-personal').disabled = false;
+            });
+
+            document.getElementById('input-phone').addEventListener('input', function() {
+                userSelection.phone = this.value;
+                document.getElementById('next-personal').disabled = false;
+            });
+
+            document.getElementById('input-address').addEventListener('input', function() {
+                userSelection.address = this.value;
+                document.getElementById('next-personal').disabled = false;
+            });
+
+            // Sayfa yüklendiğinde butonları aktif et
+            document.getElementById('next-other-info').disabled = false;
+            document.getElementById('next-personal').disabled = false;
+
+            // Gövde malzemesi
+            document.querySelectorAll('#screen-body .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-body .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.body = this.dataset.body;
+                    document.getElementById('next-body').disabled = false;
+                });
+            });
+
+            // Yüzey dokusu
+            document.querySelectorAll('#screen-texture .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-texture .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.texture = this.dataset.texture;
+                    document.getElementById('next-texture').disabled = false;
+                });
+            });
+
+            // Mobilya kapak sayısı
+            document.getElementById('input-mobilya-covers').addEventListener('input', function() {
+                userSelection.mobilyaCovers = this.value;
+                document.getElementById('next-mobilya-covers').disabled = !this.value;
+            });
+
+            // Kapak malzemesi
+            document.querySelectorAll('#screen-covers .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-covers .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.cover = this.dataset.cover;
+                    document.getElementById('next-covers').disabled = false;
+                });
+            });
+
+            // Alüminyum kapak sayısı
+            document.getElementById('input-aluminum-count').addEventListener('input', function() {
+                userSelection.aluminumCount = this.value;
+                document.getElementById('next-aluminum-count').disabled = !this.value;
+            });
+
+            // Alüminyum renk
+            document.querySelectorAll('#screen-aluminum-color .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-aluminum-color .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.aluminumColor = this.dataset.color;
+                    document.getElementById('next-aluminum-color').disabled = false;
+                });
+            });
+
+            // Çekmece ve raf sayıları
+            document.getElementById('input-drawers').addEventListener('input', function() {
+                userSelection.drawers = this.value;
+                document.getElementById('next-counts').disabled = false;
+            });
+
+            document.getElementById('input-shelves-count').addEventListener('input', function() {
+                userSelection.shelvesCount = this.value;
+                document.getElementById('next-counts').disabled = false;
+            });
+
+            // Kapı tipi
+            document.querySelectorAll('#screen-door-type .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-door-type .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.doorType = this.dataset.doorType;
+                    document.getElementById('next-door-type').disabled = false;
+                });
+            });
+
+            // Kapı cam durumu
+            document.querySelectorAll('#screen-door-glass .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-door-glass .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.doorGlass = this.dataset.doorGlass;
+                    document.getElementById('next-door-glass').disabled = false;
+                });
+            });
+
+            // Kapı pervaz
+            document.querySelectorAll('#screen-door-trim .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-door-trim .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.doorTrim = this.dataset.doorTrim;
+                    document.getElementById('next-door-trim').disabled = false;
+                });
+            });
+
+            // Panel gövde malzemesi
+            document.querySelectorAll('#screen-panel-body .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-panel-body .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.panelBody = this.dataset.panelBody;
+                    document.getElementById('next-panel-body').disabled = false;
+                });
+            });
+
+            // Panel yüzey dokusu
+            document.querySelectorAll('#screen-panel-texture .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#screen-panel-texture .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.panelTexture = this.dataset.panelTexture;
+                    document.getElementById('next-panel-texture').disabled = false;
+                });
+            });
+
+            // Aksesuarlar
+            document.querySelectorAll('#screen-accessories [data-drawer-system]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.drawerSystem = this.dataset.drawerSystem;
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-drawer-type]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.drawerType = this.dataset.drawerType;
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-lighting]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.lighting = this.dataset.lighting;
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-glass]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.glass = this.dataset.glass;
+                    toggleGlassOptions();
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-glass-thickness]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.glassThickness = this.dataset.glassThickness;
+                    document.getElementById('glass-surface-container').style.display = 'block';
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-glass-surface]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.glassSurface = this.dataset.glassSurface;
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-mirror]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.mirror = this.dataset.mirror;
+                    toggleMirrorOptions();
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-mirror-type]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.mirrorType = this.dataset.mirrorType;
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            document.querySelectorAll('#screen-accessories [data-fabric]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const groupButtons = group.querySelectorAll('.option-btn');
+                    groupButtons.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    userSelection.fabric = this.dataset.fabric;
+                    document.getElementById('next-accessories').disabled = false;
+                });
+            });
+
+            // NEXT BUTONLARI
+            document.getElementById('next-product').addEventListener('click', function() {
+                if (currentFlow.length > 0 && userSelection.product !== 'DİĞERLERİ') {
+                    showScreen(currentFlow[0]);
+                }
+            });
+
+            document.getElementById('next-dimensions').addEventListener('click', function() {
+                if (userSelection.product === 'MUTFAK DOLABI') {
+                    showScreen('screen-kitchen-appliances');
+                } else {
+                    showScreen('screen-body');
+                }
+            });
+
+            document.getElementById('next-kitchen-appliances').addEventListener('click', function() {
+                showScreen('screen-body');
+            });
+
+            document.getElementById('next-body').addEventListener('click', function() {
+                showScreen('screen-texture');
+            });
+
+            document.getElementById('next-texture').addEventListener('click', function() {
+                showScreen('screen-cover-type');
+            });
+
+            document.getElementById('next-cover-type').addEventListener('click', function() {
+                showScreen('screen-mobilya-covers');
+            });
+
+            document.getElementById('next-mobilya-covers').addEventListener('click', function() {
+                const mobilyaCovers = parseInt(userSelection.mobilyaCovers) || 0;
+                if (mobilyaCovers > 0) {
+                    showScreen('screen-covers');
+                } else {
+                    showScreen('screen-aluminum-count');
+                }
+            });
+
+            document.getElementById('next-covers').addEventListener('click', function() {
+                showScreen('screen-cover-texture');
+            });
+
+            document.getElementById('next-cover-texture').addEventListener('click', function() {
+                showScreen('screen-cover-type2');
+            });
+
+            document.getElementById('next-cover-type2').addEventListener('click', function() {
+                showScreen('screen-aluminum-count');
+            });
+
+            document.getElementById('next-aluminum-count').addEventListener('click', function() {
+                const aluminumCount = parseInt(userSelection.aluminumCount) || 0;
+                if (aluminumCount > 0) {
+                    showScreen('screen-aluminum-color');
+                } else {
+                    checkCoversAndContinue();
+                }
+            });
+
+            document.getElementById('next-aluminum-color').addEventListener('click', function() {
+                showScreen('screen-aluminum-pattern');
+            });
+
+            document.getElementById('next-aluminum-pattern').addEventListener('click', function() {
+                checkCoversAndContinue();
+            });
+
+            document.getElementById('next-counts').addEventListener('click', function() {
+                showScreen('screen-accessories');
+            });
+
+            document.getElementById('next-accessories').addEventListener('click', function() {
+                showScreen('screen-other-info');
+            });
+
+            document.getElementById('next-other-info').addEventListener('click', function() {
+                showScreen('screen-personal');
+            });
+
+            document.getElementById('next-personal').addEventListener('click', function() {
+                prepareSummary();
+            });
+
+            document.getElementById('next-other-category').addEventListener('click', function() {
+                showScreen('screen-other-info');
+            });
+
+            document.getElementById('next-door-dimensions').addEventListener('click', function() {
+                showScreen('screen-door-type');
+            });
+
+            document.getElementById('next-door-type').addEventListener('click', function() {
+                showScreen('screen-door-glass');
+            });
+
+            document.getElementById('next-door-glass').addEventListener('click', function() {
+                showScreen('screen-door-trim');
+            });
+
+            document.getElementById('next-door-trim').addEventListener('click', function() {
+                showScreen('screen-door-count');
+            });
+
+            document.getElementById('next-door-count').addEventListener('click', function() {
+                showScreen('screen-other-info');
+            });
+
+            document.getElementById('next-panel-dimensions').addEventListener('click', function() {
+                showScreen('screen-panel-body');
+            });
+
+            document.getElementById('next-panel-body').addEventListener('click', function() {
+                showScreen('screen-panel-texture');
+            });
+
+            document.getElementById('next-panel-texture').addEventListener('click', function() {
+                showScreen('screen-panel-cover-type');
+            });
+
+            document.getElementById('next-panel-cover-type').addEventListener('click', function() {
+                showScreen('screen-panel-count');
+            });
+
+            document.getElementById('next-panel-count').addEventListener('click', function() {
+                showScreen('screen-other-info');
+            });
+
+            // Geri butonları
+            document.getElementById('back-body').addEventListener('click', function() {
+                if (userSelection.product === 'MUTFAK DOLABI') {
+                    showScreen('screen-kitchen-appliances');
+                } else {
+                    showScreen('screen-dimensions');
+                }
+            });
+
+            document.getElementById('back-aluminum-count').addEventListener('click', function() {
+                const mobilyaCovers = parseInt(userSelection.mobilyaCovers) || 0;
+                if (mobilyaCovers > 0) {
+                    showScreen('screen-cover-type2');
+                } else {
+                    showScreen('screen-mobilya-covers');
+                }
+            });
+        });
+
+        function checkNextButton(buttonId) {
+            let isValid = false;
+            
+            if (buttonId === 'next-dimensions') {
+                isValid = userSelection.dimensions.width && userSelection.dimensions.height && userSelection.dimensions.depth;
+            } else if (buttonId === 'next-door-dimensions') {
+                isValid = userSelection.doorWidth && userSelection.doorHeight;
+            } else if (buttonId === 'next-panel-dimensions') {
+                isValid = userSelection.panelWidth && userSelection.panelHeight;
+            }
+            
+            document.getElementById(buttonId).disabled = !isValid;
+        }
+
+        function sendToWhatsApp() {
+            const priceRange = calculatePriceRange();
+            
+            let message = `Merhaba, fiyat teklifi almak istiyorum:\n\n`;
+            message += `*Ürün:* ${userSelection.product}\n`;
+            
+            if (mevcutUrunler.includes(userSelection.product)) {
+                message += `*Ölçüler:* ${userSelection.dimensions.width}x${userSelection.dimensions.height}x${userSelection.dimensions.depth} cm\n`;
+                
+                if (userSelection.product === 'MUTFAK DOLABI' && userSelection.kitchenAppliances.length > 0) {
+                    message += `*Mutfak Cihazları:* ${userSelection.kitchenAppliances.join(', ')}\n`;
+                }
+                
+                if (userSelection.body) {
+                    message += `*Gövde Malzemesi:* ${userSelection.body}\n`;
+                    message += `*Yüzey Dokusu:* ${userSelection.texture}\n`;
+                    if (userSelection.coverType) {
+                        message += `*Gövde Yüzey Deseni:* ${userSelection.coverType}\n`;
+                    }
+                }
+                
+                const mobilyaCovers = parseInt(userSelection.mobilyaCovers) || 0;
+                if (mobilyaCovers > 0) {
+                    message += `*Mobilya Kapak:* ${mobilyaCovers} adet\n`;
+                    if (userSelection.cover) {
+                        message += `*Kapak Malzemesi:* ${userSelection.cover}\n`;
+                    }
+                    if (userSelection.coverTexture) {
+                        message += `*Yüzey Dokusu:* ${userSelection.coverTexture}\n`;
+                    }
+                    if (userSelection.coverType2) {
+                        message += `*Kapak Yüzey Deseni:* ${userSelection.coverType2}\n`;
+                    }
+                }
+                
+                const aluminumCount = parseInt(userSelection.aluminumCount) || 0;
+                if (aluminumCount > 0) {
+                    message += `*Alüminyum Kapak:* ${aluminumCount} adet\n`;
+                    if (userSelection.aluminumColor) {
+                        message += `*Alüminyum Renk:* ${userSelection.aluminumColor}\n`;
+                    }
+                    if (userSelection.aluminumPattern) {
+                        message += `*Alüminyum Desen:* ${userSelection.aluminumPattern}\n`;
+                    }
+                }
+                
+                const totalCovers = mobilyaCovers + aluminumCount;
+                message += `*Toplam Kapak:* ${totalCovers} adet\n`;
+                
+                if (userSelection.drawers || userSelection.shelvesCount) {
+                    message += `*Çekmece Sayısı:* ${userSelection.drawers || '0'}\n`;
+                    message += `*Raf Sayısı:* ${userSelection.shelvesCount || '0'}\n`;
+                }
+                
+                if (userSelection.drawerSystem) {
+                    message += `*Çekmece Sistemi:* ${userSelection.drawerSystem}\n`;
+                }
+                if (userSelection.drawerType) {
+                    message += `*Çekmece Tipi:* ${userSelection.drawerType}\n`;
+                }
+                if (userSelection.lighting) {
+                    message += `*Aydınlatma:* ${userSelection.lighting}\n`;
+                }
+                if (userSelection.glass) {
+                    message += `*Cam:* ${userSelection.glass}\n`;
+                }
+                if (userSelection.glassThickness) {
+                    message += `*Cam Kalınlığı:* ${userSelection.glassThickness}\n`;
+                }
+                if (userSelection.glassSurface) {
+                    message += `*Cam Yüzeyi:* ${userSelection.glassSurface}\n`;
+                }
+                if (userSelection.mirror) {
+                    message += `*Ayna:* ${userSelection.mirror}\n`;
+                }
+                if (userSelection.mirrorType) {
+                    message += `*Ayna Tipi:* ${userSelection.mirrorType}\n`;
+                }
+                if (userSelection.fabric) {
+                    message += `*Kumaş:* ${userSelection.fabric}\n`;
+                }
+            } else if (userSelection.product === 'ODA KAPILARI') {
+                message += `*Kapı Ölçüleri:* ${userSelection.doorWidth}x${userSelection.doorHeight} cm\n`;
+                message += `*Kapı Tipi:* ${userSelection.doorType}\n`;
+                message += `*Cam Durumu:* ${userSelection.doorGlass}\n`;
+                message += `*Pervaz:* ${userSelection.doorTrim}\n`;
+                message += `*Kapı Adedi:* ${userSelection.doorCount}\n`;
+            } else if (userSelection.product === 'DUVAR PANELİ') {
+                message += `*Panel Ölçüleri:* ${userSelection.panelWidth}x${userSelection.panelHeight} cm\n`;
+                message += `*Gövde Malzemesi:* ${userSelection.panelBody}\n`;
+                message += `*Yüzey Dokusu:* ${userSelection.panelTexture}\n`;
+                if (userSelection.panelCoverType) {
+                    message += `*Yüzey Deseni:* ${userSelection.panelCoverType}\n`;
+                }
+                message += `*Panel Adedi:* ${userSelection.panelCount}\n`;
+            } else if (userSelection.product === 'DİĞERLERİ') {
+                message += `*Açıklama:* ${userSelection.otherDescription}\n`;
+            }
+            
+            if (userSelection.notes) {
+                message += `*Özel Notlar:* ${userSelection.notes}\n`;
+            }
+            
+            message += `*Tahmini Fiyat Aralığı:* ${priceRange.display}\n`;
+            message += `*Ad Soyad:* ${userSelection.name}\n`;
+            message += `*Telefon:* ${userSelection.phone}\n`;
+            message += `*Adres:* ${userSelection.address}\n`;
+            
+            message += `\n\n_BU YALNIZCA ÖN FİYATLANDIRMA VE SİZE ÖZEL. DETAYLI PROJELENDİRME İÇİN MİMARIMIZ EN KISA SÜREDE GERİ DÖNÜŞ SAĞLAYACAKTIR._\n\n`;
+            message += `_SİZE ÖZEL BU TALEP, PLATFORM AKILLI FİYATLANDIRMA SİSTEM TEKNOLOJİSİYLE OTOMATİK OLARAK HAZIRLANDI_`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const phoneNumber = "905541662246";
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
